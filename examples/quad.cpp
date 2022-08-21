@@ -40,6 +40,7 @@ Quad::Quad() :
 {
     // clang-format off
         Eigen::MatrixXf xs{
+       //   X       Y      R      G      B      U      V    //
           {-1.0F,  1.0F,  1.0F,  0.0F,  0.0F,  0.0F,  1.0F,},
           { 1.0F,  1.0F,  1.0F,  0.0F,  0.0F,  1.0F,  1.0F,},
           {-1.0F, -1.0F,  1.0F,  0.0F,  0.0F,  0.0F,  0.0F,},
@@ -56,15 +57,25 @@ Quad::Quad() :
     assign_vbo("textCoordIn", 2, sizeof(float) * 7, sizeof(float) * 5);
 
     auto image = png::read_png("textures/crate.png");
+    texture_ = std::make_unique<playground::Texture>(image.width, image.height, 1);
+
+    // Upload only first channel
     std::vector<uint8_t> red(image.width * image.height);
-    for (size_t i = 0; i < image.pixels.size(); ++i) {
+    for (size_t i = 0; i < image.width * image.height * 3; ++i) {
         if (i % 3 == 0) {
             red[i / 3] = image.pixels[i];
         }
     }
 
-    texture_ = std::make_unique<playground::Texture>(image.width, image.height, 1);
     texture_->upload(red.data(), 0, 0, image.width, image.height);
+
+    // Put a light gray box in the middle of the texture
+    size_t block_size = 30;
+    uint8_t color = 200;
+    std::vector<uint8_t> block(block_size * block_size);
+    std::fill(block.begin(), block.end(), color);
+    long offset = (image.width - block_size) / 2;
+    texture_->upload(block.data(), offset, offset, block_size, block_size);
 
     Eigen::Matrix4f view = Eigen::Matrix4f::Identity() * 0.75;
     view(3, 3) = 1;

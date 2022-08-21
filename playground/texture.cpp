@@ -35,6 +35,7 @@ void Texture::upload(unsigned char* data, int x_offset, int y_offset, int width,
 {
 
     bind();
+    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
     glTexSubImage2D(GL_TEXTURE_2D, 0, x_offset, y_offset, width, height, format_, GL_UNSIGNED_BYTE, data);
 }
 
