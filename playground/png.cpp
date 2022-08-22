@@ -106,11 +106,11 @@ auto read_png(std::string const& filepath) -> PngData
 
     return {
       std::move(pixels),
-      static_cast<int>(width),
-      static_cast<int>(height),
-      bit_depth,
-      color_type,
-      channels
+      static_cast<size_t>(width),
+      static_cast<size_t>(height),
+      static_cast<size_t>(bit_depth),
+      static_cast<size_t>(color_type),
+      static_cast<size_t>(channels)
     };
 }
 

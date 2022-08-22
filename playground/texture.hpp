@@ -12,7 +12,7 @@ namespace playground {
 class Texture final {
 public:
     Texture() = default;
-    Texture(int width, int height, int channels);
+    Texture(size_t width, size_t height, size_t channels);
     ~Texture();
 
     Texture(Texture const&) = delete;
@@ -20,7 +20,7 @@ public:
     Texture& operator=(Texture const&) = delete;
     Texture& operator=(Texture&&) = delete;
 
-    void upload(unsigned char* data, int x_offset, int y_offset, int width, int height);
+    void upload(unsigned char* data, size_t x_offset, size_t y_offset, size_t width, size_t height);
 
     void bind();
     void unbind();

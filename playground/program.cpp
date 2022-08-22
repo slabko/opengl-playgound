@@ -1,6 +1,10 @@
 #include <fmt/core.h>
 #include <spdlog/spdlog.h>
 
+#include "imgui.h"
+#include "imgui_impl_opengl3.h"
+#include "imgui_impl_sdl.h"
+
 #include "program.hpp"
 
 namespace playground {
@@ -53,6 +57,16 @@ Program::Program(std::string const& vertex_shader, std::string const& fragment_s
 
     glClearColor(1.0F, 1.0F, 1.0F, 1.0F);
 
+    /* ImGui Initialize */
+    IMGUI_CHECKVERSION();
+    ImGui::CreateContext();
+    ImGuiIO& io = ImGui::GetIO();
+    (void)io;
+    ImGui::StyleColorsLight();
+
+    ImGui_ImplSDL2_InitForOpenGL(window_, context_);
+    ImGui_ImplOpenGL3_Init("#version 460");
+
     /** Shaders **/
     shader_program_id_ = glCreateProgram();
     if (!shader_program_id_) {
@@ -100,6 +114,10 @@ Program::~Program()
     glDeleteShader(fragment_shader_id_);
     glDeleteProgram(shader_program_id_);
 
+    ImGui_ImplOpenGL3_Shutdown();
+    ImGui_ImplSDL2_Shutdown();
+    ImGui::DestroyContext();
+
     SDL_GL_DeleteContext(context_);
     SDL_DestroyWindow(window_);
     SDL_Quit();
@@ -110,21 +128,38 @@ void Program::start()
     while (keep_running_) {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+        ImGui_ImplOpenGL3_NewFrame();
+        ImGui_ImplSDL2_NewFrame();
+        ImGui::NewFrame();
+
         SDL_Event e;
         while (SDL_PollEvent(&e)) {
+            ImGui_ImplSDL2_ProcessEvent(&e);
             if (e.type == SDL_QUIT) {
                 keep_running_ = false;
             }
         }
 
+        present_imgui();
+
+        update();
 
         glBindVertexArray(vao_);
+
         render();
-        glDrawArrays(GL_TRIANGLES, 0, vertex_count_);
+
         glBindVertexArray(0);
+
+        ImGui::Render();
+        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
         SDL_GL_SwapWindow(window_);
     }
+}
+
+void Program::draw_simple_triangles(size_t vertex_count) 
+{
+    glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(vertex_count));
 }
 
 void Program::set_uniform_data(std::string const& name, Matrix4f const& data)
@@ -133,7 +168,7 @@ void Program::set_uniform_data(std::string const& name, Matrix4f const& data)
     glUniformMatrix4fv(id, 1, GL_FALSE, data.data());
 };
 
-void Program::alloc_vbo(size_t size)
+void Program::alloc_vbo(int64_t size)
 {
     glBindVertexArray(vao_);
 
@@ -148,7 +183,11 @@ void Program::upload_vbo(MatrixXf const& data, size_t offset)
     glBindVertexArray(vao_);
 
     glBindBuffer(GL_ARRAY_BUFFER, vbo_);
-    glBufferSubData(GL_ARRAY_BUFFER, offset, sizeof(float) * data.size(), data.data());
+    glBufferSubData(
+      GL_ARRAY_BUFFER,
+      static_cast<GLintptr>(offset),
+      static_cast<GLintptr>(sizeof(float) * data.size()),
+      data.data());
 
     glBindVertexArray(0);
 };
@@ -165,15 +204,13 @@ void Program::assign_vbo(std::string const& name, int components, size_t stride,
       components,
       GL_FLOAT,
       GL_FALSE,
-      stride,
-      reinterpret_cast<GLvoid const*>(offset));
+      static_cast<GLsizei>(stride),
+      reinterpret_cast<GLvoid const*>(offset)); // NOLINT(performance-no-int-to-ptr)
 
     glEnableVertexAttribArray(attribute_id);
 
     glBindVertexArray(0);
 }
-
-void Program::load_texture(std::string const& filename){};
 
 void Program::compile_shader(std::string const& source_code, GLuint shader_id)
 {

@@ -8,11 +8,11 @@ namespace png {
 
 struct PngData {
     std::vector<uint8_t> pixels{};
-    int width{};
-    int height{};
-    int bit_depth{};
-    int color_type{};
-    int channels{};
+    size_t width{};
+    size_t height{};
+    size_t bit_depth{};
+    size_t color_type{};
+    size_t channels{};
 };
 
 auto read_png(std::string const& filepath) -> PngData;

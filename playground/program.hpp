@@ -24,22 +24,22 @@ public:
 
     virtual ~Program();
 
+    virtual void update() {}
     virtual void render() {}
+    virtual void present_imgui() {}
 
     void start();
 
 protected:
     void set_uniform_data(std::string const& name, Matrix4f const& data);
 
-    void alloc_vbo(size_t size);
+    void alloc_vbo(int64_t size);
 
     void upload_vbo(MatrixXf const& data, size_t offset);
 
     void assign_vbo(std::string const& name, int components, size_t stride, size_t offset);
 
-    void load_texture(std::string const& filename);
-
-    void set_vertex_count(unsigned int n) { vertex_count_ = n; };
+    void draw_simple_triangles(size_t vertex_count);
 
 private:
     bool keep_running_{true};
@@ -59,8 +59,6 @@ private:
 
     unsigned int vao_{};
     unsigned int vbo_{};
-
-    unsigned int vertex_count_{};
 
     std::unordered_set<std::string> created_attributes_;
 

@@ -1,6 +1,8 @@
-#include "quad.hpp"
+#include "imgui.h"
 
 #include "../playground/png.hpp"
+
+#include "quad.hpp"
 
 char const* vertex_shader = R"(
 #version 460
@@ -39,22 +41,23 @@ Quad::Quad() :
   playground::Program{vertex_shader, fragment_shader}
 {
     // clang-format off
-        Eigen::MatrixXf xs{
-       //   X       Y      R      G      B      U      V    //
-          {-1.0F,  1.0F,  1.0F,  0.0F,  0.0F,  0.0F,  1.0F,},
-          { 1.0F,  1.0F,  1.0F,  0.0F,  0.0F,  1.0F,  1.0F,},
-          {-1.0F, -1.0F,  1.0F,  0.0F,  0.0F,  0.0F,  0.0F,},
-          {-1.0F, -1.0F,  0.0F,  1.0F,  0.0F,  0.0F,  0.0F,},
-          { 1.0F, -1.0F,  0.0F,  1.0F,  0.0F,  1.0F,  0.0F,},
-          { 1.0F,  1.0F,  0.0F,  1.0F,  0.0F,  1.0F,  1.0F,}
-        };
+    Eigen::MatrixXf xs {
+    //  X       Y      R      G      B      U      V    //
+      {-1.0F,  1.0F,  1.0F,  0.0F,  0.0F,  0.0F,  1.0F,},
+      { 1.0F,  1.0F,  1.0F,  0.0F,  0.0F,  1.0F,  1.0F,},
+      {-1.0F, -1.0F,  1.0F,  0.0F,  0.0F,  0.0F,  0.0F,},
+      {-1.0F, -1.0F,  0.0F,  1.0F,  0.0F,  0.0F,  0.0F,},
+      { 1.0F, -1.0F,  0.0F,  1.0F,  0.0F,  1.0F,  0.0F,},
+      { 1.0F,  1.0F,  0.0F,  1.0F,  0.0F,  1.0F,  1.0F,}
+    };
     // clang-format on
 
-    alloc_vbo(sizeof(float) * xs.size());
+    alloc_vbo(static_cast<int>(sizeof(float)) * xs.size());
     upload_vbo(xs, 0);
-    assign_vbo("vertexIn", 2, sizeof(float) * 7, 0);
-    assign_vbo("colorIn", 3, sizeof(float) * 7, sizeof(float) * 2);
-    assign_vbo("textCoordIn", 2, sizeof(float) * 7, sizeof(float) * 5);
+    size_t stride_size = sizeof(float) * xs.cols();
+    assign_vbo("vertexIn", 2, stride_size, 0);
+    assign_vbo("colorIn", 3, stride_size, sizeof(float) * 2);
+    assign_vbo("textCoordIn", 2, stride_size, sizeof(float) * 5);
 
     auto image = png::read_png("textures/crate.png");
     texture_ = std::make_unique<playground::Texture>(image.width, image.height, 1);
@@ -74,17 +77,28 @@ Quad::Quad() :
     uint8_t color = 200;
     std::vector<uint8_t> block(block_size * block_size);
     std::fill(block.begin(), block.end(), color);
-    long offset = (image.width - block_size) / 2;
+    size_t offset = (image.width - block_size) / 2;
     texture_->upload(block.data(), offset, offset, block_size, block_size);
+}
 
-    Eigen::Matrix4f view = Eigen::Matrix4f::Identity() * 0.75;
+void Quad::present_imgui()
+{
+    ImGui::Begin("Configuration");
+    ImGui::Text("Show the animated cube");
+    ImGui::SliderFloat("Scale", &scale_, 0, 1);
+    ImGui::Text("Application average %.1f FPS", ImGui::GetIO().Framerate);
+    ImGui::End();
+}
+
+void Quad::update()
+{
+    Eigen::Matrix4f view = Eigen::Matrix4f::Identity() * scale_;
     view(3, 3) = 1;
     set_uniform_data("view", view);
-
-    set_vertex_count(6);
 }
 
 void Quad::render()
 {
     texture_->bind();
+    draw_simple_triangles(6);
 }
