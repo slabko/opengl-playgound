@@ -91,8 +91,9 @@ Program::Program(std::string const& vertex_shader, std::string const& fragment_s
 
     link_program();
 
-    /** Buffer **/
+    /** Buffers **/
     glGenBuffers(1, &vbo_);
+    glGenBuffers(1, &ibo_);
     glGenVertexArrays(1, &vao_);
 }
 
@@ -157,23 +158,18 @@ void Program::start()
     }
 }
 
-void Program::draw_simple_triangles(size_t vertex_count) 
-{
-    glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(vertex_count));
-}
-
 void Program::set_uniform_data(std::string const& name, Matrix4f const& data)
 {
     auto id = get_uniform_location(name);
     glUniformMatrix4fv(id, 1, GL_FALSE, data.data());
 };
 
-void Program::alloc_vbo(int64_t size)
+void Program::alloc_vbo(size_t size)
 {
     glBindVertexArray(vao_);
 
     glBindBuffer(GL_ARRAY_BUFFER, vbo_);
-    glBufferData(GL_ARRAY_BUFFER, size, nullptr, GL_DYNAMIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, static_cast<GLsizei>(size), nullptr, GL_DYNAMIC_DRAW);
 
     glBindVertexArray(0);
 }
@@ -211,6 +207,43 @@ void Program::assign_vbo(std::string const& name, int components, size_t stride,
 
     glBindVertexArray(0);
 }
+
+void Program::alloc_ibo(size_t size)
+{
+    glBindVertexArray(vao_);
+
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo_);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, static_cast<GLsizei>(size), nullptr, GL_DYNAMIC_DRAW);
+
+    glBindVertexArray(0);
+}
+
+void Program::upload_ibo(MatrixXui const& data, size_t offset)
+{
+    glBindVertexArray(vao_);
+
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo_);
+    glBufferSubData(
+      GL_ELEMENT_ARRAY_BUFFER,
+      static_cast<GLintptr>(offset),
+      static_cast<GLintptr>(sizeof(GLuint) * data.size()),
+      data.data());
+
+    glBindVertexArray(0);
+}
+
+void Program::draw_simple_triangles(size_t vertex_count) 
+{
+    glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(vertex_count));
+}
+
+
+void Program::draw_indices(size_t vertex_count)
+{
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo_);
+    glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(vertex_count), GL_UNSIGNED_INT, nullptr);
+}
+
 
 void Program::compile_shader(std::string const& source_code, GLuint shader_id)
 {

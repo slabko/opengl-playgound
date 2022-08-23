@@ -4,7 +4,7 @@
 
 namespace playground {
 
-GLenum get_channels_format(int channels)
+GLenum get_channels_format(size_t channels)
 {
     switch (channels) {
     case 1:
@@ -41,7 +41,7 @@ Texture::Texture(size_t width, size_t height, size_t channels) :
       nullptr);
 }
 
-void Texture::upload(unsigned char* data, size_t x_offset, size_t y_offset, size_t width, size_t height)
+void Texture::upload(uint8_t* data, size_t x_offset, size_t y_offset, size_t width, size_t height)
 {
 
     bind();

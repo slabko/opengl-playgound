@@ -8,7 +8,7 @@
 #include <SDL2/SDL.h>
 #include <glad/glad.h>
 
-#include "playgound.hpp"
+#include "types.hpp"
 
 namespace playground {
 
@@ -33,13 +33,19 @@ public:
 protected:
     void set_uniform_data(std::string const& name, Matrix4f const& data);
 
-    void alloc_vbo(int64_t size);
+    void alloc_vbo(size_t size);
 
     void upload_vbo(MatrixXf const& data, size_t offset);
 
     void assign_vbo(std::string const& name, int components, size_t stride, size_t offset);
 
+    void alloc_ibo(size_t size);
+
+    void upload_ibo(MatrixXui const& data, size_t offset);
+
     void draw_simple_triangles(size_t vertex_count);
+
+    void draw_indices(size_t vertex_count);
 
 private:
     bool keep_running_{true};
@@ -57,8 +63,9 @@ private:
     GLuint vertex_shader_id_{};
     GLuint fragment_shader_id_{};
 
-    unsigned int vao_{};
-    unsigned int vbo_{};
+    uint32_t vao_{};
+    uint32_t vbo_{};
+    uint32_t ibo_{}; 
 
     std::unordered_set<std::string> created_attributes_;
 

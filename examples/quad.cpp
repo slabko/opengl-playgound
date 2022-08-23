@@ -41,14 +41,12 @@ Quad::Quad() :
   playground::Program{vertex_shader, fragment_shader}
 {
     // clang-format off
-    Eigen::MatrixXf xs {
+    playground::MatrixXf xs {
     //  X       Y      R      G      B      U      V    //
       {-1.0F,  1.0F,  1.0F,  0.0F,  0.0F,  0.0F,  1.0F,},
       { 1.0F,  1.0F,  1.0F,  0.0F,  0.0F,  1.0F,  1.0F,},
-      {-1.0F, -1.0F,  1.0F,  0.0F,  0.0F,  0.0F,  0.0F,},
-      {-1.0F, -1.0F,  0.0F,  1.0F,  0.0F,  0.0F,  0.0F,},
       { 1.0F, -1.0F,  0.0F,  1.0F,  0.0F,  1.0F,  0.0F,},
-      { 1.0F,  1.0F,  0.0F,  1.0F,  0.0F,  1.0F,  1.0F,}
+      {-1.0F, -1.0F,  1.0F,  0.0F,  0.0F,  0.0F,  0.0F,},
     };
     // clang-format on
 
@@ -58,6 +56,10 @@ Quad::Quad() :
     assign_vbo("vertexIn", 2, stride_size, 0);
     assign_vbo("colorIn", 3, stride_size, sizeof(float) * 2);
     assign_vbo("textCoordIn", 2, stride_size, sizeof(float) * 5);
+
+    playground::MatrixXui indices{{0, 1, 2}, {2, 3, 0}};
+    alloc_ibo(sizeof(uint32_t) * indices.size());
+    upload_ibo(indices, 0);
 
     auto image = png::read_png("textures/crate.png");
     texture_ = std::make_unique<playground::Texture>(image.width, image.height, 1);
@@ -100,5 +102,5 @@ void Quad::update()
 void Quad::render()
 {
     texture_->bind();
-    draw_simple_triangles(6);
+    draw_indices(6);
 }
