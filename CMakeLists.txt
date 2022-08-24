@@ -11,6 +11,7 @@ add_compile_options(-Wall)
 project(playground)
 
 configure_file(textures/crate.png textures/crate.png COPYONLY)
+configure_file(textures/chest.png textures/chest.png COPYONLY)
 
 find_package(Eigen3 3.4 REQUIRED NO_MODULE)
 find_package(OpenMP REQUIRED)

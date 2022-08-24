@@ -61,17 +61,15 @@ Quad::Quad() :
     alloc_ibo(sizeof(uint32_t) * indices.size());
     upload_ibo(indices, 0);
 
-    auto image = png::read_png("textures/crate.png");
+    auto image = png::read_png<png::RgbPixel>("textures/chest.png");
     texture_ = std::make_unique<playground::Texture>(image.width, image.height, 1);
 
     // Upload only first channel
     std::vector<uint8_t> red(image.width * image.height);
-    for (size_t i = 0; i < image.width * image.height * 3; ++i) {
-        if (i % 3 == 0) {
-            red[i / 3] = image.pixels[i];
-        }
-    }
-
+    auto image_reshaped = image.pixels.reshaped<Eigen::RowMajor>();
+    std::transform(image_reshaped.cbegin(), image_reshaped.cend(), red.begin(), [](auto x) {
+        return x.r;
+    });
     texture_->upload(red.data(), 0, 0, image.width, image.height);
 
     // Put a light gray box in the middle of the texture
@@ -79,8 +77,9 @@ Quad::Quad() :
     uint8_t color = 200;
     std::vector<uint8_t> block(block_size * block_size);
     std::fill(block.begin(), block.end(), color);
-    size_t offset = (image.width - block_size) / 2;
-    texture_->upload(block.data(), offset, offset, block_size, block_size);
+    size_t x_offset = (image.width - block_size) / 2;
+    size_t y_offset = (image.height - block_size) / 2;
+    texture_->upload(block.data(), x_offset, y_offset, block_size, block_size);
 }
 
 void Quad::present_imgui()

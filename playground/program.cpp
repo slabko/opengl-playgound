@@ -36,7 +36,7 @@ Program::Program(std::string const& vertex_shader, std::string const& fragment_s
       "Graphics Engine",
       SDL_WINDOWPOS_UNDEFINED,
       SDL_WINDOWPOS_UNDEFINED,
-      height_, width_,
+      width_, height_,
       SDL_WINDOW_OPENGL);
     if (!window_) {
         throw std::runtime_error("Error creating SDL window");

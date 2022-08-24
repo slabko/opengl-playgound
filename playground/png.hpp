@@ -4,10 +4,41 @@
 #include <string>
 #include <vector>
 
+#include <Eigen/Eigen>
+
+template<class PixelType>
+using Pixels = Eigen::Matrix<PixelType, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>;
+
 namespace png {
 
+struct RgbPixel {
+    uint8_t r, g, b;
+};
+
+struct RgbaPixel {
+    uint8_t r, g, b, a;
+};
+
+// NOLINTBEGIN(readability-identifier-naming)
+template<class PixelType>
+struct total_channels {
+    static const size_t value = 0;
+};
+
+template<>
+struct total_channels<RgbPixel> {
+    static const size_t value = 3;
+};
+
+template<>
+struct total_channels<RgbaPixel> {
+    static const size_t value = 4;
+};
+// NOLINTEND(readability-identifier-naming)
+
+template<class PixelType>
 struct PngData {
-    std::vector<uint8_t> pixels{};
+    Pixels<PixelType> pixels{};
     size_t width{};
     size_t height{};
     size_t bit_depth{};
@@ -15,7 +46,8 @@ struct PngData {
     size_t channels{};
 };
 
-auto read_png(std::string const& filepath) -> PngData;
+template<class PixelType>
+auto read_png(std::string const& filepath) -> PngData<PixelType>;
 
 } // namespace png
 

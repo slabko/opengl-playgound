@@ -54,7 +54,7 @@ private:
     std::string const fragment_shader_{};
 
     int height_{640};
-    int width_{640};
+    int width_{1280};
 
     SDL_Window* window_{};
     SDL_GLContext context_{};
