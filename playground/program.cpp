@@ -1,3 +1,4 @@
+#include <iostream>
 #include <fmt/core.h>
 #include <spdlog/spdlog.h>
 
@@ -158,10 +159,16 @@ void Program::start()
     }
 }
 
-void Program::set_uniform_data(std::string const& name, Matrix4f const& data)
+void Program::set_uniform_data(std::string const& name, Eigen::Matrix4f const& data)
 {
     auto id = get_uniform_location(name);
     glUniformMatrix4fv(id, 1, GL_FALSE, data.data());
+};
+
+void Program::set_uniform_data(std::string const& name, glm::mat4 const& data)
+{
+    auto id = get_uniform_location(name);
+    glUniformMatrix4fv(id, 1, GL_FALSE, &data[0][0]);
 };
 
 void Program::alloc_vbo(size_t size)
@@ -174,7 +181,7 @@ void Program::alloc_vbo(size_t size)
     glBindVertexArray(0);
 }
 
-void Program::upload_vbo(MatrixXf const& data, size_t offset)
+void Program::upload_vbo(RowMajorMatrixXf const& data, size_t offset)
 {
     glBindVertexArray(vao_);
 
@@ -218,7 +225,7 @@ void Program::alloc_ibo(size_t size)
     glBindVertexArray(0);
 }
 
-void Program::upload_ibo(MatrixXui const& data, size_t offset)
+void Program::upload_ibo(RowMajorMatrixXui const& data, size_t offset)
 {
     glBindVertexArray(vao_);
 

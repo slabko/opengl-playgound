@@ -30,6 +30,7 @@ add_executable(playground
     playground/png.cpp 
 
     examples/quad.cpp
+    examples/cube.cpp
 
     thirdparty/glad/src/glad.c 
     thirdparty/imgui/src/imgui.cpp

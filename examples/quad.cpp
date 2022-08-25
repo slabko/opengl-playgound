@@ -4,7 +4,7 @@
 
 #include "quad.hpp"
 
-char const* vertex_shader = R"(
+static char const* vertex_shader = R"(
 #version 460
 in   vec2  vertexIn;
 in   vec3  colorIn;
@@ -22,7 +22,7 @@ void main() {
 }
 )";
 
-char const* fragment_shader = R"(
+static char const* fragment_shader = R"(
 #version 460
 in   vec3  colorOut;
 in   vec2  texCoordOut;
@@ -41,7 +41,7 @@ Quad::Quad() :
   playground::Program{vertex_shader, fragment_shader}
 {
     // clang-format off
-    playground::MatrixXf xs {
+    Eigen::MatrixXf xs {
     //  X       Y      R      G      B      U      V    //
       {-1.0F,  1.0F,  1.0F,  0.0F,  0.0F,  0.0F,  1.0F,},
       { 1.0F,  1.0F,  1.0F,  0.0F,  0.0F,  1.0F,  1.0F,},
@@ -57,7 +57,7 @@ Quad::Quad() :
     assign_vbo("colorIn", 3, stride_size, sizeof(float) * 2);
     assign_vbo("textCoordIn", 2, stride_size, sizeof(float) * 5);
 
-    playground::MatrixXui indices{{0, 1, 2}, {2, 3, 0}};
+    Eigen::MatrixX<uint32_t> indices{{0, 1, 2}, {2, 3, 0}};
     alloc_ibo(sizeof(uint32_t) * indices.size());
     upload_ibo(indices, 0);
 

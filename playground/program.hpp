@@ -7,6 +7,7 @@
 #include <Eigen/Eigen>
 #include <SDL2/SDL.h>
 #include <glad/glad.h>
+#include <glm/glm.hpp>
 
 #include "types.hpp"
 
@@ -31,17 +32,19 @@ public:
     void start();
 
 protected:
-    void set_uniform_data(std::string const& name, Matrix4f const& data);
+    void set_uniform_data(std::string const& name, Eigen::Matrix4f const& data);
+
+    void set_uniform_data(std::string const& name, glm::mat4 const& data);
 
     void alloc_vbo(size_t size);
 
-    void upload_vbo(MatrixXf const& data, size_t offset);
+    void upload_vbo(RowMajorMatrixXf const& data, size_t offset);
 
     void assign_vbo(std::string const& name, int components, size_t stride, size_t offset);
 
     void alloc_ibo(size_t size);
 
-    void upload_ibo(MatrixXui const& data, size_t offset);
+    void upload_ibo(RowMajorMatrixXui const& data, size_t offset);
 
     void draw_simple_triangles(size_t vertex_count);
 
@@ -53,8 +56,8 @@ private:
     std::string const vertex_shader_{};
     std::string const fragment_shader_{};
 
-    int height_{640};
-    int width_{1280};
+    int width_{1920};
+    int height_{1080};
 
     SDL_Window* window_{};
     SDL_GLContext context_{};

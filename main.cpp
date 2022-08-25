@@ -5,10 +5,11 @@
 #include <Eigen/Eigen>
 
 #include "examples/quad.hpp"
+#include "examples/cube.hpp"
 
 int main()
 {
-    Quad p{};
+    Cube p{};
     p.start();
 
     return EXIT_SUCCESS;
