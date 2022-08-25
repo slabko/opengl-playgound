@@ -239,16 +239,17 @@ void Program::upload_ibo(RowMajorMatrixXui const& data, size_t offset)
     glBindVertexArray(0);
 }
 
-void Program::draw_simple_triangles(size_t vertex_count) 
+
+void Program::draw_simple_vertices(size_t vertex_count, DrawType draw_type)
 {
-    glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(vertex_count));
+    glDrawArrays(draw_type, 0, static_cast<GLsizei>(vertex_count));
 }
 
 
-void Program::draw_indices(size_t vertex_count)
+void Program::draw_indices(size_t vertex_count, DrawType draw_type)
 {
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo_);
-    glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(vertex_count), GL_UNSIGNED_INT, nullptr);
+    glDrawElements(draw_type, static_cast<GLsizei>(vertex_count), GL_UNSIGNED_INT, nullptr);
 }
 
 

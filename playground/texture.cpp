@@ -20,8 +20,8 @@ GLenum get_channels_format(size_t channels)
     }
 }
 
-Texture::Texture(size_t width, size_t height, size_t channels) :
-  format_{get_channels_format(channels)}
+Texture::Texture(size_t width, size_t height, size_t total_channels) :
+  total_channels_{total_channels}
 {
     glGenTextures(1, &id_);
 
@@ -32,17 +32,22 @@ Texture::Texture(size_t width, size_t height, size_t channels) :
     glTexImage2D(
       GL_TEXTURE_2D,
       0,
-      static_cast<GLint>(format_),
+      get_channels_format(total_channels),
       static_cast<GLint>(width),
       static_cast<GLint>(height),
       0,
-      format_,
+      get_channels_format(total_channels_),
       GL_UNSIGNED_BYTE,
       nullptr);
 }
 
-void Texture::upload(uint8_t* data, size_t x_offset, size_t y_offset, size_t width, size_t height)
+template<class PixelType>
+void Texture::upload(png::Pixels<PixelType> const& data, size_t x_offset, size_t y_offset, size_t width, size_t height)
 {
+    size_t recieved_channels = png::total_channels<PixelType>::value;
+    if (total_channels_ != recieved_channels) {
+        throw std::runtime_error(fmt::format("Expected {} channels, got {}", total_channels_, recieved_channels));
+    }
 
     bind();
     glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
@@ -53,10 +58,14 @@ void Texture::upload(uint8_t* data, size_t x_offset, size_t y_offset, size_t wid
       static_cast<GLint>(y_offset),
       static_cast<GLsizei>(width),
       static_cast<GLsizei>(height),
-      format_,
+      get_channels_format(total_channels_),
       GL_UNSIGNED_BYTE,
-      data);
+      (uint8_t*)(data.data())); // NOLINT(*-readability-casting)
 }
+
+template void Texture::upload<png::RedPixel>(png::Pixels<png::RedPixel> const&data, size_t x_offset, size_t y_offset, size_t width, size_t height);
+template void Texture::upload<png::RgbPixel>(png::Pixels<png::RgbPixel> const&data, size_t x_offset, size_t y_offset, size_t width, size_t height);
+template void Texture::upload<png::RgbaPixel>(png::Pixels<png::RgbaPixel> const&data, size_t x_offset, size_t y_offset, size_t width, size_t height);
 
 void Texture::bind()
 {

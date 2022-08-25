@@ -15,6 +15,12 @@ namespace playground {
 
 class Program {
 public:
+    enum DrawType {
+        Points = GL_POINTS,
+        Triangles = GL_TRIANGLES,
+        Lines = GL_LINES
+    };
+
     Program(std::string const& vertex_shader, std::string const& fragment_shader);
 
     Program(Program const&) = delete;
@@ -25,13 +31,15 @@ public:
 
     virtual ~Program();
 
-    virtual void update() {}
-    virtual void render() {}
-    virtual void present_imgui() {}
-
     void start();
 
 protected:
+    virtual void update() {}
+
+    virtual void render() {}
+
+    virtual void present_imgui() {}
+
     void set_uniform_data(std::string const& name, Eigen::Matrix4f const& data);
 
     void set_uniform_data(std::string const& name, glm::mat4 const& data);
@@ -46,9 +54,9 @@ protected:
 
     void upload_ibo(RowMajorMatrixXui const& data, size_t offset);
 
-    void draw_simple_triangles(size_t vertex_count);
+    void draw_simple_vertices(size_t vertex_count, DrawType draw_type = Triangles);
 
-    void draw_indices(size_t vertex_count);
+    void draw_indices(size_t vertex_count, DrawType draw_type = Triangles);
 
 private:
     bool keep_running_{true};
@@ -68,7 +76,7 @@ private:
 
     uint32_t vao_{};
     uint32_t vbo_{};
-    uint32_t ibo_{}; 
+    uint32_t ibo_{};
 
     std::unordered_set<std::string> created_attributes_;
 

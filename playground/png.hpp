@@ -6,10 +6,14 @@
 
 #include <Eigen/Eigen>
 
+namespace png {
+
 template<class PixelType>
 using Pixels = Eigen::Matrix<PixelType, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>;
 
-namespace png {
+struct RedPixel {
+    uint8_t r;
+};
 
 struct RgbPixel {
     uint8_t r, g, b;
@@ -23,6 +27,11 @@ struct RgbaPixel {
 template<class PixelType>
 struct total_channels {
     static const size_t value = 0;
+};
+
+template<>
+struct total_channels<RedPixel> {
+    static const size_t value = 1;
 };
 
 template<>

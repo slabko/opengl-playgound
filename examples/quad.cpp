@@ -65,21 +65,21 @@ Quad::Quad() :
     texture_ = std::make_unique<playground::Texture>(image.width, image.height, 1);
 
     // Upload only first channel
-    std::vector<uint8_t> red(image.width * image.height);
+    png::Pixels<png::RedPixel> red{image.width, image.height};
     auto image_reshaped = image.pixels.reshaped<Eigen::RowMajor>();
-    std::transform(image_reshaped.cbegin(), image_reshaped.cend(), red.begin(), [](auto x) {
-        return x.r;
+    auto red_reshaped = red.reshaped<Eigen::RowMajor>();
+    std::transform(image_reshaped.cbegin(), image_reshaped.cend(), red_reshaped.begin(), [](auto x) {
+        return png::RedPixel{x.r};
     });
-    texture_->upload(red.data(), 0, 0, image.width, image.height);
+    texture_->upload(red, 0, 0, image.width, image.height);
 
     // Put a light gray box in the middle of the texture
-    size_t block_size = 30;
+    uint32_t block_size = 30;
     uint8_t color = 200;
-    std::vector<uint8_t> block(block_size * block_size);
-    std::fill(block.begin(), block.end(), color);
+    png::Pixels<png::RedPixel> block = png::Pixels<png::RedPixel>::Constant(block_size, block_size, png::RedPixel{color});
     size_t x_offset = (image.width - block_size) / 2;
     size_t y_offset = (image.height - block_size) / 2;
-    texture_->upload(block.data(), x_offset, y_offset, block_size, block_size);
+    texture_->upload(block, x_offset, y_offset, block_size, block_size);
 }
 
 void Quad::present_imgui()

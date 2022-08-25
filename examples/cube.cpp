@@ -150,9 +150,9 @@ Cube::Cube() :
 
     // clang-format off
     Eigen::Matrix<uint32_t, Dynamic, Dynamic, RowMajor> index{
-      {0,  1,  2 },  { 1,  2,  3},
-      {4,  5,  6 },  { 5,  6,  7},
-      {8,  9, 10 },  { 9, 10, 11},
+      { 0,  1,  2},  { 1,  2,  3},
+      { 4,  5,  6},  { 5,  6,  7},
+      { 8,  9, 10},  { 9, 10, 11},
       {12, 13, 14},  {13, 14, 15},
       {16, 17, 18},  {17, 18, 19},
       {20, 21, 22},  {21, 22, 23},
@@ -181,7 +181,7 @@ Cube::Cube() :
 
     auto image = png::read_png<png::RgbPixel>("textures/crate.png");
     texture_ = std::make_unique<playground::Texture>(image.width, image.height, 3);
-    texture_->upload((uint8_t*)image.pixels.data(), 0, 0, image.width, image.height);
+    texture_->upload(image.pixels, 0, 0, image.width, image.height);
 }
 
 void Cube::present_imgui()
@@ -210,5 +210,7 @@ void Cube::update()
 void Cube::render() 
 {
     texture_->bind();
-    draw_indices(36);
+    if (show_cube_) {
+        draw_indices(36);
+    }
 }
