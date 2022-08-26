@@ -35,11 +35,16 @@ void main() {
 )";
 
 GameOfLife::GameOfLife() :
-  playground::Program(vertex_shader, fragment_shader, 1024, 1024)
+  playground::Program(vertex_shader, fragment_shader, 2000, 2000)
 {
 
     Eigen::Matrix<float, -1, -1, Eigen::RowMajor> random(size_, size_);
     random.setRandom();
+
+    // Add an empty block in the middle for fun
+    Eigen::Index empty_block_size = BOARD_SIZE / 2;
+    Eigen::Index offset = (BOARD_SIZE - empty_block_size) / 2;
+    random.block(offset, offset, empty_block_size, empty_block_size).setConstant(0);
 
     neighbors_ = Eigen::Matrix<float, -1, -1, Eigen::RowMajor>(size_, size_);
     generation_ = Eigen::Matrix<float, -1, -1, Eigen::RowMajor>(size_, size_);
@@ -47,6 +52,11 @@ GameOfLife::GameOfLife() :
     std::transform(random_reshaped.cbegin(), random_reshaped.cend(), generation_.reshaped().begin(), [](auto x) {
         return static_cast<float>(x > 0.5);
     });
+
+    generation_.row(0).setConstant(0);
+    generation_.row(generation_.rows() - 1).setConstant(0);
+    generation_.col(0).setConstant(0);
+    generation_.col(generation_.cols() - 1).setConstant(0);
 
     // clang-format off
     Eigen::MatrixXf position {
@@ -104,29 +114,29 @@ void GameOfLife::present_imgui()
 
 void GameOfLife::update_generation()
 {
-    generation_.row(0).setConstant(0);
-    generation_.row(generation_.rows() - 1).setConstant(0);
-    generation_.col(0).setConstant(0);
-    generation_.col(generation_.cols() - 1).setConstant(0);
-
     neighbors_.setConstant(0);
     for (Eigen::Index i = 1; i < generation_.cols() - 1; ++i) {
         for (Eigen::Index j = 1; j < generation_.rows() - 1; ++j) {
-            neighbors_(i, j) = generation_(i - 1, j - 1) + generation_(i, j - 1) + generation_(i + 1, j - 1)
-              + generation_(i - 1, j) + generation_(i + 1, j)
-              + generation_(i - 1, j + 1) + generation_(i, j + 1) + generation_(i + 1, j + 1);
+            neighbors_(i, j) = generation_.block(i - 1, j - 1, 3, 3).sum();
         }
     }
+    neighbors_ -= generation_;
 
     auto generation_reshaped = generation_.reshaped();
     auto neighbors_reshaped = neighbors_.reshaped();
-    std::transform(std::execution::unseq, generation_reshaped.cbegin(), generation_reshaped.cend(), neighbors_reshaped.cbegin(), generation_reshaped.begin(), [](auto y, auto x) {
-        // clang-format off
-      if (x < 2) { return 0.0F; }
-      if (x > 3) { return 0.0F; }
-      if (y == 1) { return 1.0F; }
-      if (x == 3) { return 1.0F; }
-      return 0.0F;
-        // clang-format on
-    });
+    std::transform(
+      std::execution::unseq,
+      generation_reshaped.cbegin() + 1,
+      generation_reshaped.cend() - 1,
+      neighbors_reshaped.cbegin() + 1,
+      generation_reshaped.begin() + 1,
+      [](auto y, auto x) {
+          // clang-format off
+          if (x < 2) { return 0.0F; }
+          if (x > 3) { return 0.0F; }
+          if (y == 1) { return 1.0F; }
+          if (x == 3) { return 1.0F; }
+          return 0.0F;
+          // clang-format on
+      });
 }

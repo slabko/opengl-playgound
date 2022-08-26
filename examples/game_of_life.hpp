@@ -7,7 +7,7 @@
 #include "../playground/program.hpp"
 #include "../playground/texture.hpp"
 
-static const int BOARD_SIZE = 1024;
+static const int BOARD_SIZE = 1000;
 
 class GameOfLife : public playground::Program {
 public:
