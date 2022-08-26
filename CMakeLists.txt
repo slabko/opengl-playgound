@@ -27,10 +27,11 @@ add_executable(playground
 
     playground/program.cpp
     playground/texture.cpp
-    playground/png.cpp 
+    playground/png.cpp
 
     examples/quad.cpp
     examples/cube.cpp
+    examples/game_of_life.cpp
 
     thirdparty/glad/src/glad.c 
     thirdparty/imgui/src/imgui.cpp

@@ -10,8 +10,8 @@
 
 namespace playground {
 
-Program::Program(std::string const& vertex_shader, std::string const& fragment_shader) :
-  vertex_shader_{vertex_shader}, fragment_shader_{fragment_shader}
+Program::Program(std::string const& vertex_shader, std::string const& fragment_shader, int width, int height) :
+  vertex_shader_{vertex_shader}, fragment_shader_{fragment_shader}, width_{width}, height_{height}
 {
     spdlog::info("initializing");
 

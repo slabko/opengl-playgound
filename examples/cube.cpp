@@ -167,10 +167,6 @@ Cube::Cube() :
     alloc_ibo(sizeof(uint32_t) * index.size());
     upload_ibo(index, 0);
 
-    auto glm_model = glm::mat4{1.0F};
-    auto glm_view = glm::translate(glm::mat4{1.0F}, glm::vec3{0.0F, 0.0F, -5.0F});
-    auto glm_proj = glm::perspective(glm::radians(45.0F), 1920.0F / 1080.0F, 2.0F, 100.0F);
-
     auto model = Eigen::Matrix4f::Identity();
     auto view = translate(0.0F, 0.0F, -5.0F);
     auto proj = perspective(45.0F, 1920.0F / 1080.0F, 2.0F, 100.0F);

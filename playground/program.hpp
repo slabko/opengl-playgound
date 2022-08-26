@@ -21,7 +21,7 @@ public:
         Lines = GL_LINES
     };
 
-    Program(std::string const& vertex_shader, std::string const& fragment_shader);
+    Program(std::string const& vertex_shader, std::string const& fragment_shader, int width = 1920, int height = 1080);
 
     Program(Program const&) = delete;
     Program(Program&&) = delete;
@@ -64,8 +64,8 @@ private:
     std::string const vertex_shader_{};
     std::string const fragment_shader_{};
 
-    int width_{1920};
-    int height_{1080};
+    int width_{};
+    int height_{};
 
     SDL_Window* window_{};
     SDL_GLContext context_{};
