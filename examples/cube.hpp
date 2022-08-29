@@ -1,8 +1,6 @@
 #ifndef CUBE_HPP
 #define CUBE_HPP
 
-#include <memory>
-
 #include "../playground/program.hpp"
 #include "../playground/texture.hpp"
 
@@ -13,7 +11,7 @@ public:
     void update() override;
     void present_imgui() override;
 private:
-    std::unique_ptr<playground::Texture> texture_{};
+    playground::Texture texture_{};
 
     bool show_cube_{true};
     bool animate_{false};

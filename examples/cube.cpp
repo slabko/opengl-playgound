@@ -114,7 +114,8 @@ Eigen::Matrix4f y_rotate(float a)
 }
 
 Cube::Cube() :
-  playground::Program{vertex_shader, fragment_shader}
+  playground::Program{vertex_shader, fragment_shader},
+  texture_{256, 256, 3}
 {
     using Eigen::Dynamic;
     using Eigen::RowMajor;
@@ -176,8 +177,7 @@ Cube::Cube() :
     set_uniform_data("proj",  proj);
 
     auto image = png::read_png<png::RgbPixel>("textures/crate.png");
-    texture_ = std::make_unique<playground::Texture>(image.width, image.height, 3);
-    texture_->upload(image.pixels, 0, 0, image.width, image.height);
+    texture_.upload(image.pixels, 0, 0, image.width, image.height);
 }
 
 void Cube::present_imgui()
@@ -205,8 +205,8 @@ void Cube::update()
 
 void Cube::render() 
 {
-    texture_->bind();
     if (show_cube_) {
+        texture_.bind();
         draw_indices(36);
     }
 }

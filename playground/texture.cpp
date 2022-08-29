@@ -41,7 +41,7 @@ Texture::Texture(size_t width, size_t height, size_t total_channels) :
       nullptr);
 }
 
-template<class PixelType>
+template <class PixelType>
 void Texture::upload(png::Pixels<PixelType> const& data, size_t x_offset, size_t y_offset, size_t width, size_t height)
 {
     size_t recieved_channels = png::total_channels<PixelType>::value;
@@ -63,9 +63,10 @@ void Texture::upload(png::Pixels<PixelType> const& data, size_t x_offset, size_t
       (uint8_t*)(data.data())); // NOLINT(*-readability-casting)
 }
 
-template void Texture::upload<png::RedPixel>(png::Pixels<png::RedPixel> const&data, size_t x_offset, size_t y_offset, size_t width, size_t height);
-template void Texture::upload<png::RgbPixel>(png::Pixels<png::RgbPixel> const&data, size_t x_offset, size_t y_offset, size_t width, size_t height);
-template void Texture::upload<png::RgbaPixel>(png::Pixels<png::RgbaPixel> const&data, size_t x_offset, size_t y_offset, size_t width, size_t height);
+template void Texture::upload<uint8_t>(png::Pixels<uint8_t> const& data, size_t x_offset, size_t y_offset, size_t width, size_t height);
+template void Texture::upload<png::RedPixel>(png::Pixels<png::RedPixel> const& data, size_t x_offset, size_t y_offset, size_t width, size_t height);
+template void Texture::upload<png::RgbPixel>(png::Pixels<png::RgbPixel> const& data, size_t x_offset, size_t y_offset, size_t width, size_t height);
+template void Texture::upload<png::RgbaPixel>(png::Pixels<png::RgbaPixel> const& data, size_t x_offset, size_t y_offset, size_t width, size_t height);
 
 void Texture::bind()
 {

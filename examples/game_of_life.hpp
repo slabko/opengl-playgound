@@ -1,32 +1,33 @@
 #ifndef PLAYGROUND_GAME_OF_LIFE_HPP
 #define PLAYGROUND_GAME_OF_LIFE_HPP
 
-#include <memory>
 #include <Eigen/Eigen>
+#include <memory>
 
 #include "../playground/program.hpp"
 #include "../playground/texture.hpp"
 
-static const int BOARD_SIZE = 1000;
+static int const BOARD_SIZE = 1000;
 
 class GameOfLife : public playground::Program {
 public:
     GameOfLife();
+
 protected:
     void render() override;
     void update() override;
     void present_imgui() override;
+
 private:
-    std::unique_ptr<playground::Texture> texture_{};
+    playground::Texture texture_{};
 
-    Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> generation_;
-    Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> neighbors_;
-
-    uint32_t size_{BOARD_SIZE};
+    Eigen::Matrix<uint8_t, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> generation_;
+    Eigen::Matrix<uint8_t, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> neighbors_;
 
     bool continue_{true};
 
     void update_generation();
+    void reset();
 };
 
 #endif // PLAYGROUND_GAME_OF_LIFE_HPP
