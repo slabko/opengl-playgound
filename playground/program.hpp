@@ -1,5 +1,5 @@
-#ifndef PROGRAM_HPP
-#define PROGRAM_HPP
+#ifndef PLAYGROUND_PROGRAM_HPP
+#define PLAYGROUND_PROGRAM_HPP
 
 #include <string>
 #include <unordered_set>
@@ -87,4 +87,4 @@ private:
 
 } // namespace playground
 
-#endif // PROGRAM_HPP
+#endif // PLAYGROUND_PROGRAM_HPP

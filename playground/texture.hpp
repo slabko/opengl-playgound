@@ -1,5 +1,5 @@
-#ifndef TEXTURE_HPP
-#define TEXTURE_HPP
+#ifndef PLAYGROUND_TEXTURE_HPP
+#define PLAYGROUND_TEXTURE_HPP
 
 #include <cstddef>
 
@@ -21,7 +21,7 @@ public:
     Texture& operator=(Texture const&) = delete;
     Texture& operator=(Texture&&) = delete;
 
-    template<class PixelType>
+    template <class PixelType>
     void upload(png::Pixels<PixelType> const& data, size_t x_offset, size_t y_offset, size_t width, size_t height);
 
     void bind();
@@ -35,4 +35,4 @@ private:
 
 } // namespace playground
 
-#endif // TEXTURE_HPP
+#endif // PLAYGROUND_TEXTURE_HPP

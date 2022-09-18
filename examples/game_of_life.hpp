@@ -1,8 +1,7 @@
-#ifndef PLAYGROUND_GAME_OF_LIFE_HPP
-#define PLAYGROUND_GAME_OF_LIFE_HPP
+#ifndef EXAMPLES_GAME_OF_LIFE_HPP
+#define EXAMPLES_GAME_OF_LIFE_HPP
 
 #include <Eigen/Eigen>
-#include <memory>
 
 #include "../playground/program.hpp"
 #include "../playground/texture.hpp"
@@ -30,4 +29,4 @@ private:
     void reset();
 };
 
-#endif // PLAYGROUND_GAME_OF_LIFE_HPP
+#endif // EXAMPLES_GAME_OF_LIFE_HPP

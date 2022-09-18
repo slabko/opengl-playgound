@@ -1,5 +1,5 @@
-#ifndef CUBE_HPP
-#define CUBE_HPP
+#ifndef EXAMPLES_CUBE_HPP
+#define EXAMPLES_CUBE_HPP
 
 #include "../playground/program.hpp"
 #include "../playground/texture.hpp"
@@ -10,6 +10,7 @@ public:
     void render() override;
     void update() override;
     void present_imgui() override;
+
 private:
     playground::Texture texture_{};
 
@@ -18,4 +19,4 @@ private:
     Eigen::Vector2f rotation_{0.0F, 0.0F};
 };
 
-#endif // CUBE_HPP
+#endif // EXAMPLES_CUBE_HPP

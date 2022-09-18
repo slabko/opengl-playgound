@@ -1,5 +1,5 @@
-#ifndef QUAD_HPP
-#define QUAD_HPP
+#ifndef EXAMPLES_QUAD_HPP
+#define EXAMPLES_QUAD_HPP
 
 #include <memory>
 
@@ -12,9 +12,10 @@ public:
     void update() override;
     void render() override;
     void present_imgui() override;
+
 private:
     std::unique_ptr<playground::Texture> texture_{};
     float scale_{0.75};
 };
 
-#endif // QUAD_HPP
+#endif // EXAMPLES_QUAD_HPP
