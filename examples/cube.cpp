@@ -1,9 +1,6 @@
 #include <cmath>
-#include <iostream>
 
-#include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtx/io.hpp>
 
 #include "imgui.h"
 
@@ -173,8 +170,8 @@ Cube::Cube() :
     auto proj = perspective(45.0F, 1920.0F / 1080.0F, 2.0F, 100.0F);
 
     set_uniform_data("model", model);
-    set_uniform_data("view",  view);
-    set_uniform_data("proj",  proj);
+    set_uniform_data("view", view);
+    set_uniform_data("proj", proj);
 
     auto image = png::read_png<png::RgbPixel>("textures/crate.png");
     texture_.upload(image.pixels, 0, 0, image.width, image.height);
@@ -198,12 +195,11 @@ void Cube::update()
         rotation_[1] = std::fmod(rotation_[1] + 1.0F, 360.0F);
     }
 
-    auto view =  translate(0.0F, 0.0F, -5.0F) * y_rotate(rotation_[1])  * x_rotate(rotation_[0]);
-    set_uniform_data("view",  view);
-
+    auto view = translate(0.0F, 0.0F, -5.0F) * y_rotate(rotation_[1]) * x_rotate(rotation_[0]);
+    set_uniform_data("view", view);
 }
 
-void Cube::render() 
+void Cube::render()
 {
     if (show_cube_) {
         texture_.bind();
