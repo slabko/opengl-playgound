@@ -1,18 +1,15 @@
-#include <execution>
 #include <iostream>
-#include <memory>
-#include <vector>
-
-#include <Eigen/Eigen>
 
 #include "examples/cube.hpp"
-#include "examples/quad.hpp"
 #include "examples/game_of_life.hpp"
+#include "examples/quad.hpp"
+
+#include <optional>
 
 int main()
 {
-    GameOfLife p{};
-    p.start();
+    Cube q{};
+    q.start();
 
     return EXIT_SUCCESS;
 }

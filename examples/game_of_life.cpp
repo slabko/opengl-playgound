@@ -1,40 +1,45 @@
 #include <execution>
 #include <iostream>
 
-#include "imgui.h"
+#include <Eigen/Eigen>
+
+#include <imgui.h>
 
 #include "game_of_life.hpp"
+
+using RowMajorMatrixXf = Eigen::Matrix<float, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>;
+using RowMajorMatrixXui = Eigen::Matrix<GLuint, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>;
 
 static char const* vertex_shader = R"(
 #version 460
 in   vec2  position;
-in   vec2  texcoord;
-out  vec2  v_texcoord;
+in   vec2  uv;
+out  vec2  v_uv;
 
 uniform mat4 view;
 
 void main() {
-    v_texcoord = texcoord;
+    v_uv = uv;
     gl_Position = vec4(position, 0.0, 1.0);
 }
 )";
 
 static char const* fragment_shader = R"(
 #version 460
-in   vec2  v_texcoord;
+in   vec2  v_uv;
 
 out  vec4  fragColor;
 
 uniform sampler2D textureImage;
 
 void main() {
-    float g = 1 - texture(textureImage, v_texcoord).r * 255;
+    float g = 1 - texture(textureImage, v_uv).r * 255;
     fragColor = vec4(g, g, g, 1.0);
 }
 )";
 
 GameOfLife::GameOfLife() :
-  playground::Program{vertex_shader, fragment_shader, BOARD_SIZE * 2, BOARD_SIZE * 2},
+  playground::Program{vertex_shader, fragment_shader, BOARD_SIZE * BOARD_SCALE, BOARD_SIZE * BOARD_SCALE},
   texture_{BOARD_SIZE, BOARD_SIZE, 1},
   generation_(BOARD_SIZE, BOARD_SIZE),
   neighbors_(BOARD_SIZE, BOARD_SIZE)
@@ -42,7 +47,7 @@ GameOfLife::GameOfLife() :
     reset();
 
     // clang-format off
-    Eigen::MatrixXf position {
+    RowMajorMatrixXf position {
       //  X       Y      U      V    //
       {-1.0F,  1.0F,  0.0F,  1.0F,},
       { 1.0F,  1.0F,  1.0F,  1.0F,},
@@ -51,17 +56,19 @@ GameOfLife::GameOfLife() :
     };
     // clang-format on
 
-    Eigen::MatrixX<uint32_t> index{{0, 1, 2}, {2, 3, 0}};
+    RowMajorMatrixXui index{{0, 1, 2}, {2, 3, 0}};
 
-    alloc_vbo(static_cast<int>(sizeof(float)) * position.size());
-    upload_vbo(position, 0);
-    size_t stride_size = sizeof(float) * position.cols();
+    auto vbo_size = sizeof(float) * static_cast<size_t>(position.size());
+    alloc_vbo(vbo_size);
+    upload_vbo(position.data(), 0, vbo_size);
+    auto stride_size = sizeof(float) * static_cast<size_t>(position.cols());
     assign_vbo("position", 2, stride_size, 0);
-    assign_vbo("texcoord", 2, stride_size, sizeof(float) * 2);
+    assign_vbo("uv", 2, stride_size, sizeof(float) * 2);
 
-    alloc_ibo(sizeof(uint32_t) * index.size());
-    upload_ibo(index, 0);
-};
+    auto ibo_size = sizeof(uint32_t) * static_cast<size_t>(index.size());
+    alloc_ibo(ibo_size);
+    upload_ibo(index.data(), 0, ibo_size);
+}
 
 void GameOfLife::reset()
 {
@@ -93,7 +100,7 @@ void GameOfLife::render()
 {
     texture_.bind();
     draw_indices(6);
-};
+}
 
 void GameOfLife::update()
 {
@@ -101,8 +108,8 @@ void GameOfLife::update()
         update_generation();
     }
 
-    texture_.upload(generation_, 0, 0, BOARD_SIZE, BOARD_SIZE);
-};
+    texture_.upload(generation_.data(), 0, 0, BOARD_SIZE, BOARD_SIZE);
+}
 
 void GameOfLife::present_imgui()
 {
@@ -116,13 +123,13 @@ void GameOfLife::present_imgui()
     }
     ImGui::Text("Application average %.1f FPS", ImGui::GetIO().Framerate);
     ImGui::End();
-};
+}
 
 void GameOfLife::update_generation()
 {
     neighbors_.setConstant(0);
-    for (Eigen::Index i = 1; i < generation_.cols() - 1; ++i) {
-        for (Eigen::Index j = 1; j < generation_.rows() - 1; ++j) {
+    for (Eigen::Index i = 1; i < generation_.rows() - 1; ++i) {
+        for (Eigen::Index j = 1; j < generation_.cols() - 1; ++j) {
             neighbors_(i, j) = generation_.block(i - 1, j - 1, 3, 3).sum();
         }
     }

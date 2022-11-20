@@ -1,5 +1,5 @@
-#include <iostream>
 #include <fmt/core.h>
+#include <glm/gtc/type_ptr.hpp>
 #include <spdlog/spdlog.h>
 
 #include "imgui.h"
@@ -38,7 +38,7 @@ Program::Program(std::string const& vertex_shader, std::string const& fragment_s
       SDL_WINDOWPOS_UNDEFINED,
       SDL_WINDOWPOS_UNDEFINED,
       width_, height_,
-      SDL_WINDOW_OPENGL);
+      SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE);
     if (!window_) {
         throw std::runtime_error("Error creating SDL window");
     }
@@ -56,7 +56,8 @@ Program::Program(std::string const& vertex_shader, std::string const& fragment_s
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LESS);
 
-    glClearColor(1.0F, 1.0F, 1.0F, 1.0F);
+    // glClearColor(1.0F, 1.0F, 1.0F, 1.0F);
+    glClearColor(0.1F, 0.1F, 0.1F, 1.0F);
 
     /* ImGui Initialize */
     IMGUI_CHECKVERSION();
@@ -140,6 +141,15 @@ void Program::start()
             if (e.type == SDL_QUIT) {
                 keep_running_ = false;
             }
+
+            if (e.type == SDL_WINDOWEVENT) {
+                if (e.window.event == SDL_WINDOWEVENT_SIZE_CHANGED) {
+                    width_ = e.window.data1;
+                    height_ = e.window.data2;
+                    resize(width_, height_);
+                    glViewport(0, 0, width_, height_);
+                }
+            }
         }
 
         present_imgui();
@@ -159,17 +169,17 @@ void Program::start()
     }
 }
 
-void Program::set_uniform_data(std::string const& name, Eigen::Matrix4f const& data)
-{
-    auto id = get_uniform_location(name);
-    glUniformMatrix4fv(id, 1, GL_FALSE, data.data());
-};
-
 void Program::set_uniform_data(std::string const& name, glm::mat4 const& data)
 {
     auto id = get_uniform_location(name);
-    glUniformMatrix4fv(id, 1, GL_FALSE, &data[0][0]);
-};
+    glUniformMatrix4fv(id, 1, GL_FALSE, glm::value_ptr(data));
+}
+
+void Program::set_uniform_data(std::string const& name, glm::vec3 const& data)
+{
+    auto id = get_uniform_location(name);
+    glUniform3fv(id, 1, glm::value_ptr(data));
+}
 
 void Program::alloc_vbo(size_t size)
 {
@@ -181,7 +191,7 @@ void Program::alloc_vbo(size_t size)
     glBindVertexArray(0);
 }
 
-void Program::upload_vbo(RowMajorMatrixXf const& data, size_t offset)
+void Program::upload_vbo(void const* data, size_t offset, size_t size)
 {
     glBindVertexArray(vao_);
 
@@ -189,11 +199,11 @@ void Program::upload_vbo(RowMajorMatrixXf const& data, size_t offset)
     glBufferSubData(
       GL_ARRAY_BUFFER,
       static_cast<GLintptr>(offset),
-      static_cast<GLintptr>(sizeof(float) * data.size()),
-      data.data());
+      static_cast<GLintptr>(size),
+      data);
 
     glBindVertexArray(0);
-};
+}
 
 void Program::assign_vbo(std::string const& name, int components, size_t stride, size_t offset)
 {
@@ -225,7 +235,7 @@ void Program::alloc_ibo(size_t size)
     glBindVertexArray(0);
 }
 
-void Program::upload_ibo(RowMajorMatrixXui const& data, size_t offset)
+void Program::upload_ibo(void const* data, size_t offset, size_t size)
 {
     glBindVertexArray(vao_);
 
@@ -233,18 +243,16 @@ void Program::upload_ibo(RowMajorMatrixXui const& data, size_t offset)
     glBufferSubData(
       GL_ELEMENT_ARRAY_BUFFER,
       static_cast<GLintptr>(offset),
-      static_cast<GLintptr>(sizeof(GLuint) * data.size()),
-      data.data());
+      static_cast<GLintptr>(size),
+      data);
 
     glBindVertexArray(0);
 }
-
 
 void Program::draw_simple_vertices(size_t vertex_count, DrawType draw_type)
 {
     glDrawArrays(draw_type, 0, static_cast<GLsizei>(vertex_count));
 }
-
 
 void Program::draw_indices(size_t vertex_count, DrawType draw_type)
 {
@@ -252,10 +260,17 @@ void Program::draw_indices(size_t vertex_count, DrawType draw_type)
     glDrawElements(draw_type, static_cast<GLsizei>(vertex_count), GL_UNSIGNED_INT, nullptr);
 }
 
+inline size_t cast_buffer_size(GLint buffer_size)
+{
+    if (buffer_size < 0) {
+        throw std::runtime_error(fmt::format("Could not read the compilation error, unexpected size of the error message: {}", buffer_size));
+    }
+    return static_cast<size_t>(buffer_size);
+}
 
 void Program::compile_shader(std::string const& source_code, GLuint shader_id)
 {
-    auto const* raw_source_code = reinterpret_cast<GLchar const*>(source_code.c_str());
+    auto const* raw_source_code = source_code.c_str();
     glShaderSource(shader_id, 1, &raw_source_code, nullptr);
     glCompileShader(shader_id);
 
@@ -263,10 +278,11 @@ void Program::compile_shader(std::string const& source_code, GLuint shader_id)
     glGetShaderiv(shader_id, GL_COMPILE_STATUS, &error_code);
 
     if (error_code != GL_TRUE) {
-        GLsizei buffer_size{};
-        glGetShaderiv(shader_id, GL_INFO_LOG_LENGTH, &buffer_size);
+        GLint raw_buffer_size{};
+        glGetShaderiv(shader_id, GL_INFO_LOG_LENGTH, &raw_buffer_size);
+        auto buffer_size = cast_buffer_size(raw_buffer_size);
         std::vector<GLchar> buffer(buffer_size);
-        glGetShaderInfoLog(shader_id, buffer_size, nullptr, buffer.data());
+        glGetShaderInfoLog(shader_id, raw_buffer_size, nullptr, buffer.data());
         throw std::runtime_error(fmt::format("Failed to compile shader: {}", buffer.data()));
     }
 }
@@ -280,10 +296,11 @@ void Program::link_program()
     glGetProgramiv(shader_program_id_, GL_LINK_STATUS, &error_code);
 
     if (error_code != GL_TRUE) {
-        GLsizei buffer_size{};
-        glGetProgramiv(shader_program_id_, GL_INFO_LOG_LENGTH, &buffer_size);
+        GLsizei raw_buffer_size{};
+        glGetProgramiv(shader_program_id_, GL_INFO_LOG_LENGTH, &raw_buffer_size);
+        auto buffer_size = cast_buffer_size(raw_buffer_size);
         std::vector<GLchar> buffer(buffer_size);
-        glGetProgramInfoLog(shader_program_id_, buffer_size, nullptr, buffer.data());
+        glGetProgramInfoLog(shader_program_id_, raw_buffer_size, nullptr, buffer.data());
         throw std::runtime_error(fmt::format("Failed to link shader: {}", buffer.data()));
     }
 }

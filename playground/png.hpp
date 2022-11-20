@@ -4,12 +4,10 @@
 #include <string>
 #include <vector>
 
-#include <Eigen/Eigen>
-
 namespace png {
 
 template <class PixelType>
-using Pixels = Eigen::Matrix<PixelType, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>;
+using Pixels = std::vector<PixelType>;
 
 struct RedPixel {
     uint8_t r;

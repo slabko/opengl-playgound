@@ -4,7 +4,7 @@
 
 namespace playground {
 
-GLenum get_channels_format(size_t channels)
+GLint get_channels_format(size_t channels)
 {
     switch (channels) {
     case 1:
@@ -42,11 +42,11 @@ Texture::Texture(size_t width, size_t height, size_t total_channels) :
 }
 
 template <class PixelType>
-void Texture::upload(png::Pixels<PixelType> const& data, size_t x_offset, size_t y_offset, size_t width, size_t height)
+void Texture::upload(PixelType const* data, size_t x_offset, size_t y_offset, size_t width, size_t height)
 {
-    size_t recieved_channels = png::total_channels<PixelType>::value;
-    if (total_channels_ != recieved_channels) {
-        throw std::runtime_error(fmt::format("Expected {} channels, got {}", total_channels_, recieved_channels));
+    size_t received_channels = png::total_channels<PixelType>::value;
+    if (total_channels_ != received_channels) {
+        throw std::runtime_error(fmt::format("Expected {} channels, got {}", total_channels_, received_channels));
     }
 
     bind();
@@ -60,7 +60,13 @@ void Texture::upload(png::Pixels<PixelType> const& data, size_t x_offset, size_t
       static_cast<GLsizei>(height),
       get_channels_format(total_channels_),
       GL_UNSIGNED_BYTE,
-      (uint8_t*)(data.data())); // NOLINT(*-readability-casting)
+      (uint8_t*)data); // NOLINT(*-readability-casting)
+}
+
+template <class PixelType>
+void Texture::upload(png::Pixels<PixelType> const& data, size_t x_offset, size_t y_offset, size_t width, size_t height)
+{
+    upload(data.data(), x_offset, y_offset, width, height);
 }
 
 template void Texture::upload<uint8_t>(png::Pixels<uint8_t> const& data, size_t x_offset, size_t y_offset, size_t width, size_t height);

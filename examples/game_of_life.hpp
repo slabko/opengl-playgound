@@ -7,6 +7,7 @@
 #include "../playground/texture.hpp"
 
 static int const BOARD_SIZE = 1000;
+static int const BOARD_SCALE = 2;
 
 class GameOfLife : public playground::Program {
 public:

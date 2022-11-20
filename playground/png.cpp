@@ -6,7 +6,7 @@
 
 #include "png.hpp"
 
-/* Insparation *
+/* Inspiration *
  * http://www.libpng.org/pub/png/libpng-1.2.5-manual.html
  * https://www.piko3d.net/tutorials/libpng-tutorial-loading-png-files-from-streams/
  * https://jeromebelleman.gitlab.io/posts/devops/libpng/
@@ -32,11 +32,13 @@ struct PngHandle final {
     auto operator=(PngHandle&&) -> PngHandle& = delete;
     auto operator=(PngHandle const&) -> PngHandle& = delete;
 
-    ~PngHandle() {
+    ~PngHandle()
+    {
         png_destroy_read_struct(&pngptr, &pnginfo, nullptr);
     }
 
-    void init() {
+    void init()
+    {
         pngptr = png_create_read_struct(PNG_LIBPNG_VER_STRING, nullptr, nullptr, nullptr);
         if (!pngptr) {
             throw std::runtime_error("Failed to create a PNG read structure");
@@ -49,7 +51,7 @@ struct PngHandle final {
     }
 };
 
-template<class PixelType>
+template <class PixelType>
 auto read_png(std::string const& filepath) -> PngData<PixelType>
 {
     std::ifstream file_stream(filepath, std::ios::binary);
@@ -71,7 +73,7 @@ auto read_png(std::string const& filepath) -> PngData<PixelType>
     p.init();
 
     // NOLINTNEXTLINE(cert-err52-cpp, hicpp-no-array-decay, cppcoreguidelines-pro-bounds-array-to-pointer-decay)
-    if (setjmp(png_jmpbuf(p.pngptr))) { 
+    if (setjmp(png_jmpbuf(p.pngptr))) {
         // Everything is confirms to RAII, so there is no need to clean up
         throw std::runtime_error("LibPNG Error");
     }
@@ -89,7 +91,7 @@ auto read_png(std::string const& filepath) -> PngData<PixelType>
     int color_type{};
 
     png_get_IHDR(p.pngptr, p.pnginfo, &width, &height, &bit_depth, &color_type, nullptr, nullptr, nullptr);
-    int channels = png_get_channels(p.pngptr, p.pnginfo);
+    auto channels = png_get_channels(p.pngptr, p.pnginfo);
 
     size_t expected_channels = total_channels<PixelType>::value;
     if (channels != expected_channels) {
@@ -97,10 +99,10 @@ auto read_png(std::string const& filepath) -> PngData<PixelType>
     }
 
     std::vector<png_bytep> rows(height);
-    Pixels<PixelType> pixels(height, width);
+    Pixels<PixelType> pixels(height * width);
 
     for (size_t i = 0; i < height; ++i) {
-        auto* row_data = pixels(height - i - 1, Eigen::all).data();
+        auto* row_data = &pixels[width * i];
         rows[i] = reinterpret_cast<png_bytep>(row_data);
     }
 
@@ -112,8 +114,7 @@ auto read_png(std::string const& filepath) -> PngData<PixelType>
       static_cast<size_t>(height),
       static_cast<size_t>(bit_depth),
       static_cast<size_t>(color_type),
-      static_cast<size_t>(channels)
-    };
+      static_cast<size_t>(channels)};
 }
 
 template auto read_png<RgbPixel>(std::string const& filepath) -> PngData<RgbPixel>;

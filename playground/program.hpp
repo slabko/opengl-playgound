@@ -4,12 +4,9 @@
 #include <string>
 #include <unordered_set>
 
-#include <Eigen/Eigen>
 #include <SDL2/SDL.h>
 #include <glad/glad.h>
-#include <glm/glm.hpp>
-
-#include "types.hpp"
+#include <glm/mat4x4.hpp>
 
 namespace playground {
 
@@ -40,19 +37,21 @@ protected:
 
     virtual void present_imgui() {}
 
-    void set_uniform_data(std::string const& name, Eigen::Matrix4f const& data);
+    virtual void resize(int /*width*/, int /*height*/) {}
 
     void set_uniform_data(std::string const& name, glm::mat4 const& data);
 
+    void set_uniform_data(std::string const& name, glm::vec3 const& data);
+
     void alloc_vbo(size_t size);
 
-    void upload_vbo(RowMajorMatrixXf const& data, size_t offset);
+    void upload_vbo(void const* data, size_t offset, size_t size);
 
     void assign_vbo(std::string const& name, int components, size_t stride, size_t offset);
 
     void alloc_ibo(size_t size);
 
-    void upload_ibo(RowMajorMatrixXui const& data, size_t offset);
+    void upload_ibo(void const* data, size_t offset, size_t size);
 
     void draw_simple_vertices(size_t vertex_count, DrawType draw_type = Triangles);
 

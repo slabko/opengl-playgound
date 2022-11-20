@@ -4,9 +4,17 @@ cmake_minimum_required(VERSION 3.22)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON CACHE INTERNAL "")
 
 set(CMAKE_CXX_STANDARD 20)
-add_compile_options(-march=native)
-add_compile_options(-ffast-math)
-add_compile_options(-Wall)
+# add_compile_options(-march=native)
+# add_compile_options(-ffast-math)
+
+add_compile_options(-Wall -Wextra -Wconversion -pedantic -Werror)
+
+if (CMAKE_BUILD_TYPE STREQUAL "Debug")
+    add_compile_options(-fsanitize=address -Wno-pass-failed)
+    add_link_options(-fsanitize=address)
+    add_compile_options(-fsanitize=undefined -Wno-pass-failed)
+    add_link_options(-fsanitize=undefined)
+endif()
 
 project(playground)
 
@@ -22,7 +30,10 @@ find_package(OpenGL REQUIRED)
 find_package(glm REQUIRED)
 find_package(PNG REQUIRED)
 
-add_executable(playground 
+file(GLOB_RECURSE GLAD_FILES thirdparty/glad/src/*.c)
+file(GLOB_RECURSE IMGUI_FILES thirdparty/imgui/src/*.cpp)
+
+add_executable(playground
     main.cpp 
 
     playground/program.cpp
@@ -33,14 +44,15 @@ add_executable(playground
     examples/cube.cpp
     examples/game_of_life.cpp
 
-    thirdparty/glad/src/glad.c 
-    thirdparty/imgui/src/imgui.cpp
-    thirdparty/imgui/src/imgui_demo.cpp
-    thirdparty/imgui/src/imgui_draw.cpp
-    thirdparty/imgui/src/imgui_tables.cpp
-    thirdparty/imgui/src/imgui_widgets.cpp
-    thirdparty/imgui/src/imgui_impl_opengl3.cpp
-    thirdparty/imgui/src/imgui_impl_sdl.cpp
+    ${GLAD_FILES}
+    ${IMGUI_FILES}
+)
+
+set_source_files_properties(
+    ${GLAD_FILES}
+    ${IMGUI_FILES}
+    PROPERTIES
+    COMPILE_FLAGS "-w"
 )
 
 target_link_libraries(playground 
@@ -54,7 +66,7 @@ target_link_libraries(playground
     PNG::PNG 
 )
 
-target_include_directories(playground PRIVATE 
+target_include_directories(playground SYSTEM PRIVATE
     thirdparty/glad/include 
     thirdparty/imgui/include
 )
