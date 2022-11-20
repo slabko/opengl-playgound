@@ -4,7 +4,7 @@
 
 #include <imgui.h>
 
-#include "../playground/png.hpp"
+#include "../../playground/png.hpp"
 
 #include "quad.hpp"
 
@@ -80,7 +80,7 @@ Quad::Quad() :
     });
     texture_->upload(red, 0, 0, image.width, image.height);
 
-    // Put a light gray box in the middle of the texture
+    // Put a glow gray box in the middle of the texture
     size_t block_size = 30;
     uint8_t color = 30;
     size_t x_offset = (image.width - block_size) / 2;

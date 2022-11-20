@@ -40,9 +40,10 @@ add_executable(playground
     playground/texture.cpp
     playground/png.cpp
 
-    examples/quad.cpp
-    examples/cube.cpp
-    examples/game_of_life.cpp
+    examples/quad/quad.cpp
+    examples/game_of_life/game_of_life.cpp
+    examples/scene/scene.cpp
+    examples/scene/cube.cpp
 
     ${GLAD_FILES}
     ${IMGUI_FILES}

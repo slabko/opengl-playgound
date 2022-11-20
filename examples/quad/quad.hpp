@@ -3,8 +3,8 @@
 
 #include <memory>
 
-#include "../playground/program.hpp"
-#include "../playground/texture.hpp"
+#include "../../playground/program.hpp"
+#include "../../playground/texture.hpp"
 
 class Quad : public playground::Program {
 public:

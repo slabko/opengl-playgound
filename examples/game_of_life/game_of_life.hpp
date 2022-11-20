@@ -3,8 +3,8 @@
 
 #include <Eigen/Eigen>
 
-#include "../playground/program.hpp"
-#include "../playground/texture.hpp"
+#include "../../playground/program.hpp"
+#include "../../playground/texture.hpp"
 
 static int const BOARD_SIZE = 1000;
 static int const BOARD_SCALE = 2;
