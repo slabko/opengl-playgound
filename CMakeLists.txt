@@ -4,7 +4,7 @@ cmake_minimum_required(VERSION 3.22)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON CACHE INTERNAL "")
 
 set(CMAKE_CXX_STANDARD 20)
-# add_compile_options(-march=native)
+add_compile_options(-march=native)
 # add_compile_options(-ffast-math)
 
 add_compile_options(-Wall -Wextra -Wconversion -pedantic -Werror)
@@ -20,6 +20,9 @@ project(playground)
 
 configure_file(textures/crate.png textures/crate.png COPYONLY)
 configure_file(textures/chest.png textures/chest.png COPYONLY)
+
+configure_file(examples/scene/GLSL/fragment.glsl GLSL/fragment.glsl COPYONLY)
+configure_file(examples/scene/GLSL/vertex.glsl GLSL/vertex.glsl COPYONLY)
 
 find_package(Eigen3 3.4 REQUIRED NO_MODULE)
 find_package(OpenMP REQUIRED)
