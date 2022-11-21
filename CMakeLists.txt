@@ -70,6 +70,12 @@ target_link_libraries(playground
     PNG::PNG 
 )
 
+# Following GLSL specifications, GLM supports three sets of components:
+# x, y, z, w;  r, g, b, a;  and s, t, p, q.
+# This is implemented using unions, which leads to complaints from the linter.
+# This flag disables these unions leaving only x, y and z components
+target_compile_definitions(playground PUBLIC GLM_FORCE_XYZW_ONLY)
+
 target_include_directories(playground SYSTEM PRIVATE
     thirdparty/glad/include 
     thirdparty/imgui/include
