@@ -62,16 +62,16 @@ static std::vector<glm::uvec3> create_cube_index(size_t vertices_count, size_t o
 
 Cube::Cube(size_t index_offset) :
   vertices_{create_unit_cube()},
-  index_offset_{index_offset},
-  index_{create_cube_index(vertices_.size(), index_offset_)} {}
+  start_index_{index_offset},
+  index_{create_cube_index(vertices_.size(), start_index_)} {}
 
-void Cube::set_index_offset(uint32_t index_offset)
+void Cube::set_start_index(size_t start_index)
 {
-    index_offset_ = index_offset;
+    start_index_ = start_index;
     for (auto& i : index_) {
-        i.x += index_offset_;
-        i.y += index_offset_;
-        i.z += index_offset_;
+        i.x += start_index_;
+        i.y += start_index_;
+        i.z += start_index_;
     }
 }
 

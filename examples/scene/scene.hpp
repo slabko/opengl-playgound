@@ -17,8 +17,12 @@ public:
     void resize(int width, int height) override;
 
 private:
-    Cube cube_{0};
-    Cube light_{0};
+    std::vector<Cube> shapes_{};
+
+    Cube& light_;
+    Cube& cube1_;
+    Cube& cube2_;
+    Cube& cube3_;
 
     playground::Texture texture_{};
 

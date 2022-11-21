@@ -1,115 +1,79 @@
 #include <algorithm>
 #include <cmath>
+#include <fstream>
+#include <numeric>
+#include <sstream>
 
 #include <glm/ext/matrix_clip_space.hpp>
 #include <glm/ext/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/mat4x4.hpp>
-
 #include <imgui.h>
 
 #include "../../playground/png.hpp"
+
 #include "vertex.hpp"
 
 #include "scene.hpp"
 
-static char const* vertex_shader = R"(
-#version 460
-
-in vec3 position;
-in vec3 normal;
-in vec2 uv;
-in float glow;
-
-uniform mat4   model;
-uniform mat4   view;
-uniform mat4   proj;
-
-uniform vec3   light_position;
-
-out vec3 v_normal;
-out vec2 v_uv;
-out vec3 v_fragment_position;
-out float v_glow;
-
-void main()
+static std::string read_file(std::string const& path)
 {
-    v_uv = uv;
-    v_glow = glow;
-    v_normal = normal;
-
-    gl_Position = proj * view * model * vec4(position, 1.0);
-    v_fragment_position = vec3(model * vec4(position, 1.0));
+    std::ifstream in_file{path};
+    std::ostringstream buffer;
+    buffer << in_file.rdbuf();
+    in_file.close();
+    return buffer.str();
 }
-)";
-
-static char const* fragment_shader = R"(
-#version 460
-
-in vec3 v_normal;
-in vec2 v_uv;
-in float v_glow;
-in vec3 v_fragment_position;
-out vec4 frag_color;
-
-uniform vec3 light_position;
-
-uniform sampler2D texture_image;
-
-vec3 object_color = vec3(1.0, 0.5, 0.31);
-vec3 light_color = vec3(1.0, 1.0, 1.0);
-float ambient_strength = 0.1F;
-
-uniform vec3 camera_position;
-
-float specular_strength = 0.7;
-
-void main()
-{
-    vec3 ambient = ambient_strength * light_color;
-
-    vec3 norm = normalize(v_normal);
-
-    vec3 light_dir = normalize(light_position - v_fragment_position);
-    float diff = max(dot(norm, light_dir), 0.0);
-    vec3 diffuse = diff * light_color;
-
-    vec3 view_dir = normalize(camera_position - v_fragment_position);
-    vec3 reflect_dir = reflect(-light_dir, norm);
-
-    float spec = pow(max(dot(view_dir, reflect_dir), 0.0F), 64);
-    vec3 specular = specular_strength * spec * light_color;
-
-    vec3 res = (ambient + diffuse + specular) * object_color;
-
-    frag_color = texture(texture_image, v_uv) * vec4(res, 1.0) + v_glow;
-}
-)";
 
 Scene::Scene() :
-  playground::Program{vertex_shader, fragment_shader},
-  cube_{0},
-  light_{cube_.vertex_count()},
+  playground::Program{
+    read_file("GLSL/vertex.glsl"),
+    read_file("GLSL/fragment.glsl")},
+  shapes_(4),
+  light_{shapes_[0]},
+  cube1_{shapes_[1]},
+  cube2_{shapes_[2]},
+  cube3_{shapes_[3]},
   texture_{256, 256, 3}
 {
     light_.set_glow(1.0F);
     light_.set_size(0.2F);
     light_.set_position(light_position_);
 
-    auto vbo_size = cube_.vertex_data_size() + light_.vertex_data_size();
-    alloc_vbo(vbo_size);
-    upload_vbo(cube_.vertex_data(), 0, cube_.vertex_data_size());
-    upload_vbo(light_.vertex_data(), cube_.vertex_data_size(), light_.vertex_data_size());
+    cube2_.set_position({1.0, 0.0, 0.0});
+    cube3_.set_position({-1.0, 0.0, 0.0});
+
+    size_t vertex_data_size = std::accumulate(shapes_.begin(), shapes_.end(), 0UL, [](auto sum, auto& s) {
+        return sum + s.vbo_size();
+    });
+
+    size_t index_data_size = std::accumulate(shapes_.begin(), shapes_.end(), 0UL, [](auto sum, auto& s) {
+        return sum + s.ibo_size();
+    });
+
+    alloc_vbo(vertex_data_size);
+    alloc_ibo(index_data_size);
+
+    size_t vertex_data_offset = 0;
+    size_t index_data_offset = 0;
+    size_t index_offset = 0;
+    for (auto& s : shapes_) {
+        s.set_vbo_offset(vertex_data_offset);
+        upload_vbo(s.vbo_data(), vertex_data_offset, s.vbo_size());
+        vertex_data_offset += s.vbo_size();
+
+        s.set_start_index(index_offset);
+        index_offset += s.vertex_count();
+
+        s.set_ibo_offset(index_data_offset);
+        upload_ibo(s.ibo_data(), index_data_offset, s.ibo_size());
+        index_data_offset += s.ibo_size();
+    }
 
     assign_vbo("position", decltype(Vertex::position)::length(), sizeof(Vertex), offsetof(Vertex, position));
     assign_vbo("normal", decltype(Vertex::normal)::length(), sizeof(Vertex), offsetof(Vertex, normal));
     assign_vbo("uv", decltype(Vertex::uv)::length(), sizeof(Vertex), offsetof(Vertex, uv));
     assign_vbo("glow", 1, sizeof(Vertex), offsetof(Vertex, glow));
-
-    auto ibo_size = cube_.index_data_size() + light_.vertex_data_size();
-    alloc_ibo(ibo_size);
-    upload_ibo(cube_.index_data(), 0, cube_.index_data_size());
-    upload_ibo(light_.index_data(), cube_.index_data_size(), light_.index_data_size());
 
     auto model = glm::mat4(1.0F);
     auto view = glm::translate(glm::mat4(1.0F), {0.0F, 0.0F, -5.0F});
@@ -137,12 +101,16 @@ void Scene::present_imgui()
 
     if (ImGui::SliderFloat3("Light Position", glm::value_ptr(light_position_), -5, 5)) {
         light_.set_position(light_position_);
-        upload_vbo(light_.vertex_data(), cube_.vertex_data_size(), light_.vertex_data_size());
+        upload_vbo(light_.vbo_data(), light_.vbo_offset(), light_.vbo_size());
     }
 
     if (ImGui::SliderFloat("Cube Size", &cube_size_, 0.0F, 2.0F)) {
-        cube_.set_size(cube_size_);
-        upload_vbo(cube_.vertex_data(), 0, cube_.vertex_data_size());
+        cube1_.set_size(cube_size_);
+        cube2_.set_size(cube_size_);
+        cube3_.set_size(cube_size_);
+        upload_vbo(cube1_.vbo_data(), cube1_.vbo_offset(), cube1_.vbo_size());
+        upload_vbo(cube2_.vbo_data(), cube2_.vbo_offset(), cube2_.vbo_size());
+        upload_vbo(cube3_.vbo_data(), cube3_.vbo_offset(), cube3_.vbo_size());
     }
 
     ImGui::End();
@@ -178,7 +146,12 @@ void Scene::render()
 {
     if (show_cube_) {
         texture_.bind();
-        draw_indices(cube_.vertex_count() + light_.vertex_count());
+
+        size_t vertex_count = std::accumulate(shapes_.begin(), shapes_.end(), 0UL, [](auto sum, auto& s) {
+            return sum + s.vertex_count();
+        });
+
+        draw_indices(vertex_count);
     }
 }
 
