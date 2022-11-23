@@ -51,11 +51,11 @@ protected:
 
     void alloc_ibo(size_t size);
 
-    void upload_ibo(void const* data, size_t offset, size_t size);
+    void upload_ibo(void const* data, size_t offset, size_t size_bytes);
 
     void draw_simple_vertices(size_t vertex_count, DrawType draw_type = Triangles);
 
-    void draw_indices(size_t vertex_count, DrawType draw_type = Triangles);
+    void draw_indices(size_t vertex_count, DrawType draw_type = Triangles, size_t offset_bytes = 0);
 
 private:
     bool keep_running_{true};

@@ -7,6 +7,7 @@
 #include <glm/ext/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/mat4x4.hpp>
+#include <gsl/narrow>
 #include <imgui.h>
 
 #include "../../playground/png.hpp"
@@ -42,31 +43,21 @@ Scene::Scene() :
     sphere2_.set_position({1.0, 0.0, 0.0});
     cube1_.set_position({-1.0, 0.0, 0.0});
 
-    size_t vertex_data_size = std::accumulate(shapes_.begin(), shapes_.end(), 0UL, [](auto sum, auto& s) {
-        return sum + s->vbo_size();
+    size_t vertex_count = std::accumulate(shapes_.begin(), shapes_.end(), 0UL, [](auto sum, auto& s) {
+        return sum + s->vertex_count();
     });
 
-    size_t index_data_size = std::accumulate(shapes_.begin(), shapes_.end(), 0UL, [](auto sum, auto& s) {
-        return sum + s->ibo_size();
-    });
+    /////// VBO ////////
+    size_t vertex_data_size = vertex_count * sizeof(Vertex);
 
     alloc_vbo(vertex_data_size);
-    alloc_ibo(index_data_size);
 
-    size_t vertex_data_offset = 0;
-    size_t index_data_offset = 0;
-    size_t index_offset = 0;
+    size_t vbo_data_offset = 0;
     for (auto& s : shapes_) {
-        s->set_vbo_offset(vertex_data_offset);
-        upload_vbo(s->vbo_data(), vertex_data_offset, s->vbo_size());
-        vertex_data_offset += s->vbo_size();
-
-        s->set_start_index(index_offset);
-        index_offset += s->vertex_count();
-
-        s->set_ibo_offset(index_data_offset);
-        upload_ibo(s->ibo_data(), index_data_offset, s->ibo_size());
-        index_data_offset += s->ibo_size();
+        auto const vbo_chunk_size = s->vertex_count() * sizeof(Vertex);
+        upload_vbo(s->vbo_data(), vbo_data_offset, vbo_chunk_size);
+        s->set_vbo_offset_bytes(vbo_data_offset);
+        vbo_data_offset += vbo_chunk_size;
     }
 
     assign_vbo("position", decltype(Vertex::position)::length(), sizeof(Vertex), offsetof(Vertex, position));
@@ -74,6 +65,19 @@ Scene::Scene() :
     assign_vbo("uv", decltype(Vertex::uv)::length(), sizeof(Vertex), offsetof(Vertex, uv));
     assign_vbo("glow", 1, sizeof(Vertex), offsetof(Vertex, glow));
 
+    //////// IBO ////////
+    assert(vertex_count % 3 == 0); // We expect to see 3 vertices on each polygon
+    size_t index_count = vertex_count / 3;
+    size_t index_data_size = index_count * sizeof(glm::uvec3);
+
+    indices_.resize(index_count);
+    for (uint32_t i = 0; i < indices_.size(); ++i) {
+        indices_[i] = glm::uvec3{0, 1, 2} + glm::uvec3{3, 3, 3} * i;
+    }
+    alloc_ibo(index_data_size);
+    upload_ibo(indices_.data(), 0, index_data_size);
+
+    /////// Uniform Data ////////
     auto model = glm::mat4(1.0F);
     auto view = glm::translate(glm::mat4(1.0F), {0.0F, 0.0F, -5.0F});
     auto proj = glm::perspective(glm::quarter_pi<float>(), 1920.0F / 1080.0F, 2.0F, 100.0F);
@@ -85,6 +89,7 @@ Scene::Scene() :
     set_uniform_data("light_position", light_position_);
     set_uniform_data("camera_position", glm::vec3{0.0F, 0.0F, 5.0F});
 
+    ///////// Texture ////////
     auto image = png::read_png<png::RgbPixel>("textures/crate.png");
     texture_.upload(image.pixels, 0, 0, image.width, image.height);
 }
@@ -100,16 +105,16 @@ void Scene::present_imgui()
 
     if (ImGui::SliderFloat3("Light Position", glm::value_ptr(light_position_), -5, 5)) {
         light_.set_position(light_position_);
-        upload_vbo(light_.vbo_data(), light_.vbo_offset(), light_.vbo_size());
+        upload_vbo(light_.vbo_data(), light_.vbo_offset_bytes(), light_.vertex_count() * sizeof(Vertex));
     }
 
     if (ImGui::SliderFloat("Cube Size", &cube_size_, 0.0F, 2.0F)) {
         sphere1_.set_size(cube_size_ * 0.5F);
         sphere2_.set_size(cube_size_ * 0.5F);
         cube1_.set_size(cube_size_);
-        upload_vbo(sphere1_.vbo_data(), sphere1_.vbo_offset(), sphere1_.vbo_size());
-        upload_vbo(sphere2_.vbo_data(), sphere2_.vbo_offset(), sphere2_.vbo_size());
-        upload_vbo(cube1_.vbo_data(), cube1_.vbo_offset(), cube1_.vbo_size());
+        upload_vbo(sphere1_.vbo_data(), sphere1_.vbo_offset_bytes(), sphere1_.vertex_count() * sizeof(Vertex));
+        upload_vbo(sphere2_.vbo_data(), sphere2_.vbo_offset_bytes(), sphere2_.vertex_count() * sizeof(Vertex));
+        upload_vbo(cube1_.vbo_data(), cube1_.vbo_offset_bytes(), cube1_.vertex_count() * sizeof(Vertex));
     }
 
     ImGui::End();
@@ -145,12 +150,7 @@ void Scene::render()
 {
     if (show_cube_) {
         texture_.bind();
-
-        size_t vertex_count = std::accumulate(shapes_.begin(), shapes_.end(), 0UL, [](auto sum, auto& s) {
-            return sum + s->vertex_count();
-        });
-
-        draw_indices(vertex_count);
+        draw_indices(indices_.size() * glm::uvec3::length());
     }
 }
 

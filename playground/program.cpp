@@ -239,7 +239,7 @@ void Program::alloc_ibo(size_t size)
     glBindVertexArray(0);
 }
 
-void Program::upload_ibo(void const* data, size_t offset, size_t size)
+void Program::upload_ibo(void const* data, size_t offset, size_t size_bytes)
 {
     glBindVertexArray(vao_);
 
@@ -247,7 +247,7 @@ void Program::upload_ibo(void const* data, size_t offset, size_t size)
     glBufferSubData(
       GL_ELEMENT_ARRAY_BUFFER,
       gsl::narrow<GLintptr>(offset),
-      gsl::narrow<GLintptr>(size),
+      gsl::narrow<GLintptr>(size_bytes),
       data);
 
     glBindVertexArray(0);
@@ -258,10 +258,11 @@ void Program::draw_simple_vertices(size_t vertex_count, DrawType draw_type)
     glDrawArrays(draw_type, 0, gsl::narrow<GLsizei>(vertex_count));
 }
 
-void Program::draw_indices(size_t vertex_count, DrawType draw_type)
+void Program::draw_indices(size_t vertex_count, DrawType draw_type, size_t offset_bytes)
 {
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo_);
-    glDrawElements(draw_type, gsl::narrow<GLsizei>(vertex_count), GL_UNSIGNED_INT, nullptr);
+    auto const* offset_bytes_ptr = reinterpret_cast<void*>(offset_bytes);
+    glDrawElements(draw_type, gsl::narrow<GLsizei>(vertex_count), GL_UNSIGNED_INT, offset_bytes_ptr);
 }
 
 void Program::compile_shader(std::string const& source_code, GLuint shader_id)

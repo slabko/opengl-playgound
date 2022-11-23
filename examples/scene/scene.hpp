@@ -26,6 +26,8 @@ private:
 
     std::vector<Shape*> shapes_{};
 
+    std::vector<glm::uvec3> indices_{};
+
     playground::Texture texture_{};
 
     bool show_cube_{true};

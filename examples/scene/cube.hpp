@@ -10,12 +10,6 @@ class Cube : public Shape {
 public:
     Cube();
 
-    [[nodiscard]] size_t vertex_count() const override { return vertices_.size(); }
-    [[nodiscard]] size_t index_count() const override { return index_.size(); }
-
-    [[nodiscard]] size_t start_index() const { return static_cast<uint32_t>(start_index_); }
-    void set_start_index(size_t start_index) override;
-
     [[nodiscard]] glm::vec3 position() const { return position_; }
     void set_position(glm::vec3 position);
 
@@ -25,16 +19,12 @@ public:
     [[nodiscard]] float glow() const { return glow_; }
     void set_glow(float glow);
 
-    [[nodiscard]] Vertex const* vbo_data() const override { return vertices_.data(); }
-    [[nodiscard]] size_t vbo_size() const override { return vertex_count() * sizeof(Vertex); }
+    [[nodiscard]] size_t vertex_count() const override { return vertices_.size(); }
 
-    [[nodiscard]] glm::uvec3 const* ibo_data() const override { return index_.data(); }
-    [[nodiscard]] size_t ibo_size() const override { return index_count() * sizeof(glm::uvec3); }
+    [[nodiscard]] Vertex const* vbo_data() const override { return vertices_.data(); }
 
 private:
     std::vector<Vertex> vertices_{};
-    size_t start_index_{0};
-    std::vector<glm::uvec3> index_{};
 
     glm::vec3 position_{0.0F};
     float size_{1.0F};

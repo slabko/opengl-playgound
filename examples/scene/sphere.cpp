@@ -5,9 +5,7 @@
 
 #include "sphere.hpp"
 
-// TODO: split the function up
-// TODO: remove `smooth`, instead introduce another function `smoothen`
-static std::vector<Vertex> create_unit_icosahedron(size_t degree, bool smooth)
+static std::vector<Vertex> create_unit_icosahedron(size_t degree)
 {
     // clang-format off
     std::vector<glm::mat3> polygons {
@@ -61,31 +59,21 @@ static std::vector<Vertex> create_unit_icosahedron(size_t degree, bool smooth)
         auto c = glm::normalize(p[2]);
 
         auto norm = glm::normalize(glm::cross(b - a, c - a));
+        glm::vec2 uv{0.0F, 0.0F};
 
-        auto norm_a = smooth ? glm::normalize(a) : norm;
-        auto norm_b = smooth ? glm::normalize(b) : norm;
-        auto norm_c = smooth ? glm::normalize(c) : norm;
-
-        // TODO: use emplace_back
-        res.push_back({a, norm_a, {0.0F, 0.0F}, 0.0F});
-        res.push_back({b, norm_b, {0.0F, 0.0F}, 0.0F});
-        res.push_back({c, norm_c, {0.0F, 0.0F}, 0.0F});
+        res.emplace_back(a, norm, uv, 0.0F);
+        res.emplace_back(b, norm, uv, 0.0F);
+        res.emplace_back(c, norm, uv, 0.0F);
     }
 
     return res;
 }
 
-// TODO: copy-paste from cube.cpp
-static std::vector<glm::uvec3> create_cube_index(size_t vertices_count, size_t offset)
+static void smoothen(std::vector<Vertex>& vertices)
 {
-    auto uint_offset = static_cast<uint32_t>(offset);
-    std::vector<glm::uvec3> res(vertices_count / 3);
-    for (uint32_t i = 0; i < res.size(); ++i) {
-        res[i].x = uint_offset + i * 3;
-        res[i].y = uint_offset + i * 3 + 1;
-        res[i].z = uint_offset + i * 3 + 2;
+    for (auto& p : vertices) {
+        p.normal = glm::normalize(p.position);
     }
-    return res;
 }
 
 Sphere::Sphere() :
@@ -93,18 +81,11 @@ Sphere::Sphere() :
 
 Sphere::Sphere(size_t degree, bool smooth) :
   Shape(),
-  unit_icosahedron_{create_unit_icosahedron(degree, smooth)},
-  vertices_{unit_icosahedron_},
-  index_{create_cube_index(vertices_.size(), start_index_)} {}
-
-// TODO: copy-paste from cube.cpp
-void Sphere::set_start_index(size_t start_index)
+  unit_icosahedron_{create_unit_icosahedron(degree)},
+  vertices_{unit_icosahedron_}
 {
-    start_index_ = start_index;
-    for (auto& i : index_) {
-        i.x += gsl::narrow<uint32_t>(start_index_);
-        i.y += gsl::narrow<uint32_t>(start_index_);
-        i.z += gsl::narrow<uint32_t>(start_index_);
+    if (smooth) {
+        smoothen(unit_icosahedron_);
     }
 }
 
