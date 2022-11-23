@@ -57,9 +57,8 @@ Program::Program(std::string const& vertex_shader, std::string const& fragment_s
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LESS);
 
-    // TODO: Fix all shapes to support face culling
-    // glEnable(GL_CULL_FACE);
-    // glCullFace(GL_FRONT);  
+    glEnable(GL_CULL_FACE);
+    glCullFace(GL_BACK);
 
     // glClearColor(1.0F, 1.0F, 1.0F, 1.0F);
     glClearColor(0.1F, 0.1F, 0.1F, 1.0F);

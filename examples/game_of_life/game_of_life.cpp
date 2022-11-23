@@ -49,10 +49,10 @@ GameOfLife::GameOfLife() :
     // clang-format off
     RowMajorMatrixXf position {
       //  X       Y      U      V    //
-      {-1.0F,  1.0F,  0.0F,  1.0F,},
       { 1.0F,  1.0F,  1.0F,  1.0F,},
-      { 1.0F, -1.0F,  1.0F,  0.0F,},
+      {-1.0F,  1.0F,  0.0F,  1.0F,},
       {-1.0F, -1.0F,  0.0F,  0.0F,},
+      { 1.0F, -1.0F,  1.0F,  0.0F,},
     };
     // clang-format on
 
