@@ -1,4 +1,3 @@
-#include <algorithm>
 #include <cmath>
 #include <fstream>
 #include <numeric>
@@ -29,26 +28,26 @@ Scene::Scene() :
   playground::Program{
     read_file("GLSL/vertex.glsl"),
     read_file("GLSL/fragment.glsl")},
-  shapes_(4),
-  light_{shapes_[0]},
-  cube1_{shapes_[1]},
-  cube2_{shapes_[2]},
-  cube3_{shapes_[3]},
+  shapes_{&light_, &sphere1_, &sphere2_, &cube1_},
   texture_{256, 256, 3}
 {
     light_.set_glow(1.0F);
     light_.set_size(0.2F);
     light_.set_position(light_position_);
 
-    cube2_.set_position({1.0, 0.0, 0.0});
-    cube3_.set_position({-1.0, 0.0, 0.0});
+    sphere1_.set_size(0.5);
+    sphere2_.set_size(0.5);
+    cube1_.set_size(1.0F);
+
+    sphere2_.set_position({1.0, 0.0, 0.0});
+    cube1_.set_position({-1.0, 0.0, 0.0});
 
     size_t vertex_data_size = std::accumulate(shapes_.begin(), shapes_.end(), 0UL, [](auto sum, auto& s) {
-        return sum + s.vbo_size();
+        return sum + s->vbo_size();
     });
 
     size_t index_data_size = std::accumulate(shapes_.begin(), shapes_.end(), 0UL, [](auto sum, auto& s) {
-        return sum + s.ibo_size();
+        return sum + s->ibo_size();
     });
 
     alloc_vbo(vertex_data_size);
@@ -58,16 +57,16 @@ Scene::Scene() :
     size_t index_data_offset = 0;
     size_t index_offset = 0;
     for (auto& s : shapes_) {
-        s.set_vbo_offset(vertex_data_offset);
-        upload_vbo(s.vbo_data(), vertex_data_offset, s.vbo_size());
-        vertex_data_offset += s.vbo_size();
+        s->set_vbo_offset(vertex_data_offset);
+        upload_vbo(s->vbo_data(), vertex_data_offset, s->vbo_size());
+        vertex_data_offset += s->vbo_size();
 
-        s.set_start_index(index_offset);
-        index_offset += s.vertex_count();
+        s->set_start_index(index_offset);
+        index_offset += s->vertex_count();
 
-        s.set_ibo_offset(index_data_offset);
-        upload_ibo(s.ibo_data(), index_data_offset, s.ibo_size());
-        index_data_offset += s.ibo_size();
+        s->set_ibo_offset(index_data_offset);
+        upload_ibo(s->ibo_data(), index_data_offset, s->ibo_size());
+        index_data_offset += s->ibo_size();
     }
 
     assign_vbo("position", decltype(Vertex::position)::length(), sizeof(Vertex), offsetof(Vertex, position));
@@ -105,12 +104,12 @@ void Scene::present_imgui()
     }
 
     if (ImGui::SliderFloat("Cube Size", &cube_size_, 0.0F, 2.0F)) {
+        sphere1_.set_size(cube_size_ * 0.5F);
+        sphere2_.set_size(cube_size_ * 0.5F);
         cube1_.set_size(cube_size_);
-        cube2_.set_size(cube_size_);
-        cube3_.set_size(cube_size_);
+        upload_vbo(sphere1_.vbo_data(), sphere1_.vbo_offset(), sphere1_.vbo_size());
+        upload_vbo(sphere2_.vbo_data(), sphere2_.vbo_offset(), sphere2_.vbo_size());
         upload_vbo(cube1_.vbo_data(), cube1_.vbo_offset(), cube1_.vbo_size());
-        upload_vbo(cube2_.vbo_data(), cube2_.vbo_offset(), cube2_.vbo_size());
-        upload_vbo(cube3_.vbo_data(), cube3_.vbo_offset(), cube3_.vbo_size());
     }
 
     ImGui::End();
@@ -148,7 +147,7 @@ void Scene::render()
         texture_.bind();
 
         size_t vertex_count = std::accumulate(shapes_.begin(), shapes_.end(), 0UL, [](auto sum, auto& s) {
-            return sum + s.vertex_count();
+            return sum + s->vertex_count();
         });
 
         draw_indices(vertex_count);

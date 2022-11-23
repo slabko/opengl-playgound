@@ -1,6 +1,8 @@
 #include <algorithm>
+#include <vector>
 
 #include <glm/ext/matrix_transform.hpp>
+#include <gsl/narrow>
 
 #include "cube.hpp"
 
@@ -60,18 +62,18 @@ static std::vector<glm::uvec3> create_cube_index(size_t vertices_count, size_t o
     return res;
 }
 
-Cube::Cube(size_t index_offset) :
+Cube::Cube() :
+  Shape(),
   vertices_{create_unit_cube()},
-  start_index_{index_offset},
   index_{create_cube_index(vertices_.size(), start_index_)} {}
 
 void Cube::set_start_index(size_t start_index)
 {
     start_index_ = start_index;
     for (auto& i : index_) {
-        i.x += start_index_;
-        i.y += start_index_;
-        i.z += start_index_;
+        i.x += gsl::narrow<uint32_t>(start_index_);
+        i.y += gsl::narrow<uint32_t>(start_index_);
+        i.z += gsl::narrow<uint32_t>(start_index_);
     }
 }
 

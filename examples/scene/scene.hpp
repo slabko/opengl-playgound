@@ -4,7 +4,9 @@
 #include "../../playground/program.hpp"
 #include "../../playground/texture.hpp"
 #include "cube.hpp"
+#include "sphere.hpp"
 
+#include <boost/ptr_container/ptr_vector.hpp>
 #include <glm/vec2.hpp>
 #include <glm/vec3.hpp>
 
@@ -17,12 +19,12 @@ public:
     void resize(int width, int height) override;
 
 private:
-    std::vector<Cube> shapes_{};
+    Sphere light_{2, false};
+    Sphere sphere1_{1, true};
+    Sphere sphere2_{3, false};
+    Cube cube1_{};
 
-    Cube& light_;
-    Cube& cube1_;
-    Cube& cube2_;
-    Cube& cube3_;
+    std::vector<Shape*> shapes_{};
 
     playground::Texture texture_{};
 

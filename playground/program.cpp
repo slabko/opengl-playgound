@@ -1,5 +1,6 @@
 #include <fmt/core.h>
 #include <glm/gtc/type_ptr.hpp>
+#include <gsl/narrow>
 #include <spdlog/spdlog.h>
 
 #include "imgui.h"
@@ -55,6 +56,10 @@ Program::Program(std::string const& vertex_shader, std::string const& fragment_s
 
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LESS);
+
+    // TODO: Fix all shapes to support face culling
+    // glEnable(GL_CULL_FACE);
+    // glCullFace(GL_FRONT);  
 
     // glClearColor(1.0F, 1.0F, 1.0F, 1.0F);
     glClearColor(0.1F, 0.1F, 0.1F, 1.0F);
@@ -186,7 +191,7 @@ void Program::alloc_vbo(size_t size)
     glBindVertexArray(vao_);
 
     glBindBuffer(GL_ARRAY_BUFFER, vbo_);
-    glBufferData(GL_ARRAY_BUFFER, static_cast<GLsizei>(size), nullptr, GL_DYNAMIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, gsl::narrow<GLsizei>(size), nullptr, GL_DYNAMIC_DRAW);
 
     glBindVertexArray(0);
 }
@@ -198,8 +203,8 @@ void Program::upload_vbo(void const* data, size_t offset, size_t size)
     glBindBuffer(GL_ARRAY_BUFFER, vbo_);
     glBufferSubData(
       GL_ARRAY_BUFFER,
-      static_cast<GLintptr>(offset),
-      static_cast<GLintptr>(size),
+      gsl::narrow<GLintptr>(offset),
+      gsl::narrow<GLintptr>(size),
       data);
 
     glBindVertexArray(0);
@@ -217,7 +222,7 @@ void Program::assign_vbo(std::string const& name, int components, size_t stride,
       components,
       GL_FLOAT,
       GL_FALSE,
-      static_cast<GLsizei>(stride),
+      gsl::narrow<GLsizei>(stride),
       reinterpret_cast<GLvoid const*>(offset)); // NOLINT(performance-no-int-to-ptr)
 
     glEnableVertexAttribArray(attribute_id);
@@ -230,7 +235,7 @@ void Program::alloc_ibo(size_t size)
     glBindVertexArray(vao_);
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo_);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, static_cast<GLsizei>(size), nullptr, GL_DYNAMIC_DRAW);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, gsl::narrow<GLsizei>(size), nullptr, GL_DYNAMIC_DRAW);
 
     glBindVertexArray(0);
 }
@@ -242,8 +247,8 @@ void Program::upload_ibo(void const* data, size_t offset, size_t size)
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo_);
     glBufferSubData(
       GL_ELEMENT_ARRAY_BUFFER,
-      static_cast<GLintptr>(offset),
-      static_cast<GLintptr>(size),
+      gsl::narrow<GLintptr>(offset),
+      gsl::narrow<GLintptr>(size),
       data);
 
     glBindVertexArray(0);
@@ -251,21 +256,13 @@ void Program::upload_ibo(void const* data, size_t offset, size_t size)
 
 void Program::draw_simple_vertices(size_t vertex_count, DrawType draw_type)
 {
-    glDrawArrays(draw_type, 0, static_cast<GLsizei>(vertex_count));
+    glDrawArrays(draw_type, 0, gsl::narrow<GLsizei>(vertex_count));
 }
 
 void Program::draw_indices(size_t vertex_count, DrawType draw_type)
 {
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo_);
-    glDrawElements(draw_type, static_cast<GLsizei>(vertex_count), GL_UNSIGNED_INT, nullptr);
-}
-
-inline size_t cast_buffer_size(GLint buffer_size)
-{
-    if (buffer_size < 0) {
-        throw std::runtime_error(fmt::format("Could not read the compilation error, unexpected size of the error message: {}", buffer_size));
-    }
-    return static_cast<size_t>(buffer_size);
+    glDrawElements(draw_type, gsl::narrow<GLsizei>(vertex_count), GL_UNSIGNED_INT, nullptr);
 }
 
 void Program::compile_shader(std::string const& source_code, GLuint shader_id)
@@ -280,7 +277,7 @@ void Program::compile_shader(std::string const& source_code, GLuint shader_id)
     if (error_code != GL_TRUE) {
         GLint raw_buffer_size{};
         glGetShaderiv(shader_id, GL_INFO_LOG_LENGTH, &raw_buffer_size);
-        auto buffer_size = cast_buffer_size(raw_buffer_size);
+        auto buffer_size = gsl::narrow<size_t>(raw_buffer_size);
         std::vector<GLchar> buffer(buffer_size);
         glGetShaderInfoLog(shader_id, raw_buffer_size, nullptr, buffer.data());
         throw std::runtime_error(fmt::format("Failed to compile shader: {}", buffer.data()));
@@ -298,7 +295,7 @@ void Program::link_program()
     if (error_code != GL_TRUE) {
         GLsizei raw_buffer_size{};
         glGetProgramiv(shader_program_id_, GL_INFO_LOG_LENGTH, &raw_buffer_size);
-        auto buffer_size = cast_buffer_size(raw_buffer_size);
+        auto buffer_size = gsl::narrow<size_t>(raw_buffer_size);
         std::vector<GLchar> buffer(buffer_size);
         glGetProgramInfoLog(shader_program_id_, raw_buffer_size, nullptr, buffer.data());
         throw std::runtime_error(fmt::format("Failed to link shader: {}", buffer.data()));

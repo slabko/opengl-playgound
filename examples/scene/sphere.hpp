@@ -1,14 +1,15 @@
-#ifndef PLAYGROUND_CUBE_HPP
-#define PLAYGROUND_CUBE_HPP
+#ifndef PLAYGROUND_SPHERE_HPP
+#define PLAYGROUND_SPHERE_HPP
 
 #include <vector>
 
 #include "shape.hpp"
-#include "vertex.hpp"
 
-class Cube : public Shape {
+class Sphere : public Shape {
 public:
-    Cube();
+    Sphere();
+
+    Sphere(size_t degree, bool smooth);
 
     [[nodiscard]] size_t vertex_count() const override { return vertices_.size(); }
     [[nodiscard]] size_t index_count() const override { return index_.size(); }
@@ -32,6 +33,7 @@ public:
     [[nodiscard]] size_t ibo_size() const override { return index_count() * sizeof(glm::uvec3); }
 
 private:
+    std::vector<Vertex> unit_icosahedron_{};
     std::vector<Vertex> vertices_{};
     size_t start_index_{0};
     std::vector<glm::uvec3> index_{};
@@ -43,4 +45,4 @@ private:
     void update_vertices();
 };
 
-#endif // PLAYGROUND_CUBE_HPP
+#endif // PLAYGROUND_SPHERE_HPP

@@ -10,10 +10,13 @@ add_compile_options(-march=native)
 add_compile_options(-Wall -Wextra -Wconversion -pedantic -Werror)
 
 if (CMAKE_BUILD_TYPE STREQUAL "Debug")
-    add_compile_options(-fsanitize=address -Wno-pass-failed)
+    add_compile_options(-fsanitize=address)
     add_link_options(-fsanitize=address)
-    add_compile_options(-fsanitize=undefined -Wno-pass-failed)
+    add_compile_options(-fsanitize=undefined)
     add_link_options(-fsanitize=undefined)
+
+    # compiler sometimes fail to optimize loops with sanitizers enabled
+    add_compile_options(-Wno-pass-failed)
 endif()
 
 project(playground)
@@ -32,6 +35,8 @@ find_package(SDL2 REQUIRED)
 find_package(OpenGL REQUIRED)
 find_package(glm REQUIRED)
 find_package(PNG REQUIRED)
+find_package(Boost REQUIRED COMPONENTS container)
+find_package(TBB REQUIRED)
 
 file(GLOB_RECURSE GLAD_FILES thirdparty/glad/src/*.c)
 file(GLOB_RECURSE IMGUI_FILES thirdparty/imgui/src/*.cpp)
@@ -47,6 +52,7 @@ add_executable(playground
     examples/game_of_life/game_of_life.cpp
     examples/scene/scene.cpp
     examples/scene/cube.cpp
+    examples/scene/sphere.cpp
 
     ${GLAD_FILES}
     ${IMGUI_FILES}
@@ -67,7 +73,9 @@ target_link_libraries(playground
     SDL2::SDL2 
     Eigen3::Eigen
     OpenMP::OpenMP_CXX
-    PNG::PNG 
+    PNG::PNG
+    Boost::container
+    TBB::tbb # GCC only
 )
 
 # Following GLSL specifications, GLM supports three sets of components:
@@ -76,7 +84,12 @@ target_link_libraries(playground
 # This flag disables these unions leaving only x, y and z components
 target_compile_definitions(playground PUBLIC GLM_FORCE_XYZW_ONLY)
 
+# https://gcc.gnu.org/bugzilla/show_bug.cgi?id=101228, not yet fixed in GCC
+target_compile_definitions(playground PUBLIC TBB_SUPPRESS_DEPRECATED_MESSAGES)
+
+
 target_include_directories(playground SYSTEM PRIVATE
-    thirdparty/glad/include 
+    thirdparty/gsl/include
+    thirdparty/glad/include
     thirdparty/imgui/include
 )
