@@ -71,9 +71,9 @@ Scene::Scene() :
     size_t index_data_size = index_count * sizeof(glm::uvec3);
 
     indices_.resize(index_count);
-    for (uint32_t i = 0; i < indices_.size(); ++i) {
-        indices_[i] = glm::uvec3{0, 1, 2} + glm::uvec3{3, 3, 3} * i;
-    }
+    std::generate(indices_.begin(), indices_.end(), [i = 0U]() mutable {
+        return glm::uvec3{0, 1, 2} + glm::uvec3{3, 3, 3} * i++;
+    });
     alloc_ibo(index_data_size);
     upload_ibo(indices_.data(), 0, index_data_size);
 
@@ -111,7 +111,9 @@ void Scene::present_imgui()
     if (ImGui::SliderFloat("Cube Size", &cube_size_, 0.0F, 2.0F)) {
         sphere1_.set_size(cube_size_ * 0.5F);
         sphere2_.set_size(cube_size_ * 0.5F);
+        sphere2_.set_position({cube_size_, 0.0F, 0.0F});
         cube1_.set_size(cube_size_);
+        cube1_.set_position({-cube_size_, 0.0F, 0.0F});
         upload_vbo(sphere1_.vbo_data(), sphere1_.vbo_offset_bytes(), sphere1_.vertex_count() * sizeof(Vertex));
         upload_vbo(sphere2_.vbo_data(), sphere2_.vbo_offset_bytes(), sphere2_.vertex_count() * sizeof(Vertex));
         upload_vbo(cube1_.vbo_data(), cube1_.vbo_offset_bytes(), cube1_.vertex_count() * sizeof(Vertex));
