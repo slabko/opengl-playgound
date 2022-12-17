@@ -59,11 +59,10 @@ static std::vector<Vertex> create_unit_icosahedron(size_t degree)
         auto c = glm::normalize(p[2]);
 
         auto norm = glm::normalize(glm::cross(b - a, c - a));
-        glm::vec2 uv{0.0F, 0.0F};
 
-        res.emplace_back(a, norm, uv, 0.0F);
-        res.emplace_back(b, norm, uv, 0.0F);
-        res.emplace_back(c, norm, uv, 0.0F);
+        res.emplace_back(a, norm, 0.0F);
+        res.emplace_back(b, norm, 0.0F);
+        res.emplace_back(c, norm, 0.0F);
     }
 
     return res;

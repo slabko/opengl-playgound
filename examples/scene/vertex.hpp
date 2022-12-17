@@ -11,11 +11,10 @@
 struct Vertex {
     glm::vec3 position{0.0F};
     glm::vec3 normal{0.0F};
-    glm::vec2 uv{0.0F};
     float glow{0.0F};
 
-    Vertex(glm::vec3 position, glm::vec3 normal, glm::vec2 uv, float glow) :
-      position{position}, normal{normal}, uv{uv}, glow{glow} {}
+    Vertex(glm::vec3 position, glm::vec3 normal, float glow) :
+      position{position}, normal{normal}, glow{glow} {}
 };
 
 #endif // PLAYGROUND_VERTEX_CPP_HPP

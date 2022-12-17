@@ -68,7 +68,6 @@ Scene::Scene() :
 
     assign_vbo("position", decltype(Vertex::position)::length(), sizeof(Vertex), offsetof(Vertex, position));
     assign_vbo("normal", decltype(Vertex::normal)::length(), sizeof(Vertex), offsetof(Vertex, normal));
-    assign_vbo("uv", decltype(Vertex::uv)::length(), sizeof(Vertex), offsetof(Vertex, uv));
     assign_vbo("glow", 1, sizeof(Vertex), offsetof(Vertex, glow));
 
     //////// IBO ////////
