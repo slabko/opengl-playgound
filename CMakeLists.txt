@@ -51,8 +51,8 @@ add_executable(playground
     examples/quad/quad.cpp
     examples/game_of_life/game_of_life.cpp
     examples/scene/scene.cpp
-    examples/scene/cube.cpp
-    examples/scene/sphere.cpp
+        examples/scene/shapes/cuboid.cpp
+    examples/scene/shapes/sphere.cpp
 
     ${GLAD_FILES}
     ${IMGUI_FILES}

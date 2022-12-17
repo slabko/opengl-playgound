@@ -2,9 +2,8 @@
 #include <vector>
 
 #include <glm/ext/matrix_transform.hpp>
-#include <gsl/narrow>
 
-#include "cube.hpp"
+#include "cuboid.hpp"
 
 static std::vector<Vertex> create_unit_cube()
 {
@@ -50,33 +49,46 @@ static std::vector<Vertex> create_unit_cube()
     // clang-format on
 }
 
-Cube::Cube() :
-  Shape(),
+Cuboid::Cuboid() :
   vertices_{create_unit_cube()} {}
 
-void Cube::set_position(glm::vec3 position)
+void Cuboid::set_position(glm::vec3 position)
 {
     position_ = position;
-    update_vertices();
+    set_needs_update();
 }
 
-void Cube::set_size(float size)
+void Cuboid::set_height(float height)
 {
-    size_ = size;
-    update_vertices();
+    height_ = height;
+    set_needs_update();
 }
 
-void Cube::set_glow(float glow)
+void Cuboid::set_width(float width)
+{
+    width_ = width;
+    set_needs_update();
+}
+
+void Cuboid::set_depth(float depth)
+{
+    depth_ = depth;
+    set_needs_update();
+}
+
+void Cuboid::set_glow(float glow)
 {
     glow_ = glow;
-    update_vertices();
+    set_needs_update();
 }
 
-void Cube::update_vertices()
+void Cuboid::update()
 {
     auto unit = create_unit_cube();
     std::transform(unit.cbegin(), unit.cend(), vertices_.begin(), [this](Vertex v) {
-        v.position = v.position * size_ + position_;
+        v.position.x = v.position.x * width_ + position_.x;
+        v.position.y = v.position.y * height_ + position_.y;
+        v.position.z = v.position.z * depth_ + position_.z;
         v.glow = glow_;
         return v;
     });

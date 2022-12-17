@@ -5,7 +5,7 @@
 
 #include <glm/vec3.hpp>
 
-#include "vertex.hpp"
+#include "../vertex.hpp"
 
 class Shape {
 public:
@@ -20,13 +20,21 @@ public:
 
     [[nodiscard]] virtual Vertex const* vbo_data() const = 0;
 
+    bool needs_update() { return needs_update_; };
+
+    virtual void update() = 0;
+
     // used by the scene class to store location in the memory;
     // these fields have no logic attached to the shape itself
     [[nodiscard]] size_t vbo_offset_bytes() const { return vbo_offset_bytes_; }
     void set_vbo_offset_bytes(size_t vbo_offset_bytes) { vbo_offset_bytes_ = vbo_offset_bytes; }
 
+protected:
+    void set_needs_update() { needs_update_ = true; };
+
 private:
     size_t vbo_offset_bytes_{};
+    bool needs_update_{true};
 };
 
 #endif // PLAYGROUND_SHAPE_HPP

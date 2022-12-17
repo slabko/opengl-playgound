@@ -35,13 +35,20 @@ Scene::Scene() :
     light_.set_glow(1.0F);
     light_.set_size(0.2F);
     light_.set_position(light_position_);
+    light_.update();
 
     sphere1_.set_size(0.5);
-    sphere2_.set_size(0.5);
-    cube1_.set_size(1.0F);
+    sphere1_.update();
 
+    cube1_.set_width(10.0F);
+    cube1_.set_depth(10.0F);
+    cube1_.set_height(0.5F);
+    cube1_.set_position({0.0F, -1.0F, 0.0F});
+    cube1_.update();
+
+    sphere2_.set_size(0.5);
     sphere2_.set_position({1.0, 0.0, 0.0});
-    cube1_.set_position({-1.0, 0.0, 0.0});
+    sphere2_.update();
 
     size_t vertex_count = std::accumulate(shapes_.begin(), shapes_.end(), 0UL, [](auto sum, auto& s) {
         return sum + s->vertex_count();
@@ -105,15 +112,18 @@ void Scene::present_imgui()
 
     if (ImGui::SliderFloat3("Light Position", glm::value_ptr(light_position_), -5, 5)) {
         light_.set_position(light_position_);
+        light_.update();
         upload_vbo(light_.vbo_data(), light_.vbo_offset_bytes(), light_.vertex_count() * sizeof(Vertex));
     }
 
-    if (ImGui::SliderFloat("Cube Size", &cube_size_, 0.0F, 2.0F)) {
+    if (ImGui::SliderFloat("Cuboid Size", &cube_size_, 0.0F, 2.0F)) {
         sphere1_.set_size(cube_size_ * 0.5F);
+        sphere1_.update();
+
         sphere2_.set_size(cube_size_ * 0.5F);
         sphere2_.set_position({cube_size_, 0.0F, 0.0F});
-        cube1_.set_size(cube_size_);
-        cube1_.set_position({-cube_size_, 0.0F, 0.0F});
+        sphere2_.update();
+
         upload_vbo(sphere1_.vbo_data(), sphere1_.vbo_offset_bytes(), sphere1_.vertex_count() * sizeof(Vertex));
         upload_vbo(sphere2_.vbo_data(), sphere2_.vbo_offset_bytes(), sphere2_.vertex_count() * sizeof(Vertex));
         upload_vbo(cube1_.vbo_data(), cube1_.vbo_offset_bytes(), cube1_.vertex_count() * sizeof(Vertex));

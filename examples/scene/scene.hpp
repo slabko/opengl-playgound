@@ -3,8 +3,8 @@
 
 #include "../../playground/program.hpp"
 #include "../../playground/texture.hpp"
-#include "cube.hpp"
-#include "sphere.hpp"
+#include "shapes/cuboid.hpp"
+#include "shapes/sphere.hpp"
 
 #include <boost/ptr_container/ptr_vector.hpp>
 #include <glm/vec2.hpp>
@@ -22,7 +22,7 @@ private:
     Sphere light_{2, false};
     Sphere sphere1_{1, true};
     Sphere sphere2_{3, false};
-    Cube cube1_{};
+    Cuboid cube1_{};
 
     std::vector<Shape*> shapes_{};
 

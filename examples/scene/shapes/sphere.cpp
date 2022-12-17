@@ -80,7 +80,6 @@ Sphere::Sphere() :
   Sphere(0, false) {}
 
 Sphere::Sphere(size_t degree, bool smooth) :
-  Shape(),
   unit_icosahedron_{create_unit_icosahedron(degree)},
   vertices_{unit_icosahedron_}
 {
@@ -92,22 +91,22 @@ Sphere::Sphere(size_t degree, bool smooth) :
 void Sphere::set_position(glm::vec3 position)
 {
     position_ = position;
-    update_vertices();
+    set_needs_update();
 }
 
 void Sphere::set_size(float size)
 {
     size_ = size;
-    update_vertices();
+    set_needs_update();
 }
 
 void Sphere::set_glow(float glow)
 {
     glow_ = glow;
-    update_vertices();
+    set_needs_update();
 }
 
-void Sphere::update_vertices()
+void Sphere::update()
 {
     std::transform(unit_icosahedron_.cbegin(), unit_icosahedron_.cend(), vertices_.begin(), [this](Vertex v) {
         v.position = v.position * size_ + position_;
