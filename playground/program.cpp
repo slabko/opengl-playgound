@@ -173,6 +173,12 @@ void Program::start()
     }
 }
 
+void Program::set_uniform_data(std::string const& name, float const& data)
+{
+     auto id = get_uniform_location(name);
+     glUniform1f(id, data);
+}
+
 void Program::set_uniform_data(std::string const& name, glm::mat4 const& data)
 {
     auto id = get_uniform_location(name);
@@ -258,10 +264,10 @@ void Program::draw_simple_vertices(size_t vertex_count, DrawType draw_type)
     glDrawArrays(draw_type, 0, gsl::narrow<GLsizei>(vertex_count));
 }
 
-void Program::draw_indices(size_t vertex_count, DrawType draw_type, size_t offset_bytes)
+void Program::draw_indices(size_t vertex_count, DrawType draw_type, size_t offset_count)
 {
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo_);
-    auto const* offset_bytes_ptr = reinterpret_cast<void*>(offset_bytes);
+    auto const* offset_bytes_ptr = reinterpret_cast<void*>(offset_count * sizeof(GLuint));
     glDrawElements(draw_type, gsl::narrow<GLsizei>(vertex_count), GL_UNSIGNED_INT, offset_bytes_ptr);
 }
 

@@ -60,9 +60,9 @@ static std::vector<Vertex> create_unit_icosahedron(size_t degree)
 
         auto norm = glm::normalize(glm::cross(b - a, c - a));
 
-        res.emplace_back(a, norm, 0.0F);
-        res.emplace_back(b, norm, 0.0F);
-        res.emplace_back(c, norm, 0.0F);
+        res.emplace_back(a, norm);
+        res.emplace_back(b, norm);
+        res.emplace_back(c, norm);
     }
 
     return res;
@@ -99,17 +99,10 @@ void Sphere::set_size(float size)
     set_needs_update();
 }
 
-void Sphere::set_glow(float glow)
-{
-    glow_ = glow;
-    set_needs_update();
-}
-
 void Sphere::update()
 {
     std::transform(unit_icosahedron_.cbegin(), unit_icosahedron_.cend(), vertices_.begin(), [this](Vertex v) {
         v.position = v.position * size_ + position_;
-        v.glow = glow_;
         return v;
     });
 }

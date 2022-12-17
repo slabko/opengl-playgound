@@ -1,20 +1,17 @@
 #version 460
 
 in vec3 v_normal;
-in vec2 v_uv;
-in float v_glow;
 in vec3 v_fragment_position;
 out vec4 frag_color;
 
 uniform vec3 light_position;
-
-vec3 object_color = vec3(1.0, 0.5, 0.31);
-vec3 light_color = vec3(1.0, 1.0, 1.0);
-float ambient_strength = 0.1F;
-
+uniform float glow;
 uniform vec3 camera_position;
 
-float specular_strength = 0.7;
+const vec3 object_color = vec3(1.0, 0.5, 0.31);
+const vec3 light_color = vec3(1.0, 1.0, 1.0);
+const float ambient_strength = 0.1F;
+const float specular_strength = 0.7;
 
 void main()
 {
@@ -34,5 +31,5 @@ void main()
 
     vec3 res = (ambient + diffuse + specular) * object_color;
 
-    frag_color = vec4(res, 1.0) + v_glow;
+    frag_color = max(vec4(res, 1.0), glow);
 }

@@ -39,6 +39,8 @@ protected:
 
     virtual void resize(int /*width*/, int /*height*/) {}
 
+    void set_uniform_data(std::string const& name, float const& data);
+
     void set_uniform_data(std::string const& name, glm::mat4 const& data);
 
     void set_uniform_data(std::string const& name, glm::vec3 const& data);
@@ -55,7 +57,7 @@ protected:
 
     void draw_simple_vertices(size_t vertex_count, DrawType draw_type = Triangles);
 
-    void draw_indices(size_t vertex_count, DrawType draw_type = Triangles, size_t offset_bytes = 0);
+    void draw_indices(size_t vertex_count, DrawType draw_type = Triangles, size_t offset_count = 0);
 
 private:
     bool keep_running_{true};

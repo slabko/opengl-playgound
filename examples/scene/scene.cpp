@@ -16,6 +16,8 @@
 
 #include "scene.hpp"
 
+#include <spdlog/spdlog.h>
+
 static std::string read_file(std::string const& path)
 {
     std::ifstream in_file{path};
@@ -31,7 +33,6 @@ Scene::Scene() :
     read_file("GLSL/fragment.glsl")},
   shapes_{&light_, &sphere1_, &sphere2_, &cube1_}
 {
-    light_.set_glow(1.0F);
     light_.set_size(0.2F);
     light_.set_position(light_position_);
     light_.update();
@@ -68,17 +69,14 @@ Scene::Scene() :
 
     assign_vbo("position", decltype(Vertex::position)::length(), sizeof(Vertex), offsetof(Vertex, position));
     assign_vbo("normal", decltype(Vertex::normal)::length(), sizeof(Vertex), offsetof(Vertex, normal));
-    assign_vbo("glow", 1, sizeof(Vertex), offsetof(Vertex, glow));
 
     //////// IBO ////////
     assert(vertex_count % 3 == 0); // We expect to see 3 vertices on each polygon
-    size_t index_count = vertex_count / 3;
-    size_t index_data_size = index_count * sizeof(glm::uvec3);
+    size_t index_count = vertex_count;
+    size_t index_data_size = index_count * sizeof(uint32_t);
 
     indices_.resize(index_count);
-    std::generate(indices_.begin(), indices_.end(), [i = 0U]() mutable {
-        return glm::uvec3{0, 1, 2} + glm::uvec3{3, 3, 3} * i++;
-    });
+    std::iota(indices_.begin(), indices_.end(), 0);
     alloc_ibo(index_data_size);
     upload_ibo(indices_.data(), 0, index_data_size);
 
@@ -93,14 +91,13 @@ Scene::Scene() :
 
     set_uniform_data("light_position", light_position_);
     set_uniform_data("camera_position", glm::vec3{0.0F, 0.0F, 5.0F});
+    set_uniform_data("glow", 0.0F);
 }
 
 void Scene::present_imgui()
 {
     ImGui::Begin("Configuration");
     ImGui::Text("Show the animated cube");
-    ImGui::Checkbox("Show Scene", &show_cube_);
-    ImGui::Checkbox("Animate Scene", &animate_);
     ImGui::Text("Application average %.1f FPS", ImGui::GetIO().Framerate);
     ImGui::SliderFloat2("Rotation", glm::value_ptr(camera_rotation_), 0, 360);
 
@@ -142,21 +139,19 @@ void Scene::update_view_projection()
 
 void Scene::update()
 {
-    if (animate_) {
-        camera_rotation_[0] = std::fmod(camera_rotation_[0] + 1.0F, 360.0F);
-        camera_rotation_[1] = std::fmod(camera_rotation_[1] + 1.0F, 360.0F);
-    }
-
     update_view_projection();
-
     set_uniform_data("light_position", light_position_);
 }
 
 void Scene::render()
 {
-    if (show_cube_) {
-        draw_indices(indices_.size() * glm::uvec3::length());
-    }
+    // Light
+    set_uniform_data("glow", 1.0F);
+    draw_indices(light_.vertex_count());
+
+    // Objects
+    set_uniform_data("glow", 0.0F);
+    draw_indices(indices_.size(), Triangles, light_.vertex_count());
 }
 
 void Scene::resize(int width, int height)

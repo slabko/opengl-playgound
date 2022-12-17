@@ -22,9 +22,6 @@ public:
     [[nodiscard]] float depth() const { return depth_; }
     void set_depth(float depth);
 
-    [[nodiscard]] float glow() const { return glow_; }
-    void set_glow(float glow);
-
     [[nodiscard]] size_t vertex_count() const override { return vertices_.size(); }
 
     [[nodiscard]] Vertex const* vbo_data() const override { return vertices_.data(); }
@@ -38,7 +35,6 @@ private:
     float height_{1.0F};
     float width_{1.0F};
     float depth_{1.0F};
-    float glow_{0.0F};
 };
 
 #endif // PLAYGROUND_CUBOID_HPP

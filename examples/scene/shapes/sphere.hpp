@@ -17,9 +17,6 @@ public:
     [[nodiscard]] float size() const { return size_; }
     void set_size(float size);
 
-    [[nodiscard]] float glow() const { return glow_; }
-    void set_glow(float glow);
-
     [[nodiscard]] size_t vertex_count() const override { return vertices_.size(); }
 
     [[nodiscard]] Vertex const* vbo_data() const override { return vertices_.data(); }
@@ -32,7 +29,6 @@ private:
 
     glm::vec3 position_{0.0F};
     float size_{1.0F};
-    float glow_{0.0F};
 };
 
 #endif // PLAYGROUND_SPHERE_HPP

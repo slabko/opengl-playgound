@@ -19,17 +19,15 @@ public:
     void resize(int width, int height) override;
 
 private:
-    Sphere light_{2, false};
-    Sphere sphere1_{1, true};
-    Sphere sphere2_{3, false};
+    Sphere light_{1, false};
+    Sphere sphere1_{2, true};
+    Sphere sphere2_{2, false};
     Cuboid cube1_{};
 
     std::vector<Shape*> shapes_{};
 
-    std::vector<glm::uvec3> indices_{};
+    std::vector<uint32_t> indices_{};
 
-    bool show_cube_{true};
-    bool animate_{false};
     float cube_size_{1.0F};
     glm::vec3 camera_position_{0.0F, 1.0F, 5.0F};
     glm::vec2 camera_rotation_{0.0F, 0.0F};
