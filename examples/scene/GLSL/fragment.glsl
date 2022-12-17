@@ -8,8 +8,6 @@ out vec4 frag_color;
 
 uniform vec3 light_position;
 
-uniform sampler2D texture_image;
-
 vec3 object_color = vec3(1.0, 0.5, 0.31);
 vec3 light_color = vec3(1.0, 1.0, 1.0);
 float ambient_strength = 0.1F;
@@ -36,5 +34,5 @@ void main()
 
     vec3 res = (ambient + diffuse + specular) * object_color;
 
-    frag_color = texture(texture_image, v_uv) * vec4(res, 1.0) + v_glow;
+    frag_color = vec4(res, 1.0) + v_glow;
 }

@@ -29,8 +29,7 @@ Scene::Scene() :
   playground::Program{
     read_file("GLSL/vertex.glsl"),
     read_file("GLSL/fragment.glsl")},
-  shapes_{&light_, &sphere1_, &sphere2_, &cube1_},
-  texture_{256, 256, 3}
+  shapes_{&light_, &sphere1_, &sphere2_, &cube1_}
 {
     light_.set_glow(1.0F);
     light_.set_size(0.2F);
@@ -95,10 +94,6 @@ Scene::Scene() :
 
     set_uniform_data("light_position", light_position_);
     set_uniform_data("camera_position", glm::vec3{0.0F, 0.0F, 5.0F});
-
-    ///////// Texture ////////
-    auto image = png::read_png<png::RgbPixel>("textures/crate.png");
-    texture_.upload(image.pixels, 0, 0, image.width, image.height);
 }
 
 void Scene::present_imgui()
@@ -161,7 +156,6 @@ void Scene::update()
 void Scene::render()
 {
     if (show_cube_) {
-        texture_.bind();
         draw_indices(indices_.size() * glm::uvec3::length());
     }
 }

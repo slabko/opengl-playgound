@@ -28,8 +28,6 @@ private:
 
     std::vector<glm::uvec3> indices_{};
 
-    playground::Texture texture_{};
-
     bool show_cube_{true};
     bool animate_{false};
     float cube_size_{1.0F};
