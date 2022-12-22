@@ -50,12 +50,12 @@ Scene::Scene() :
     sphere2_.set_position({1.0, 0.0, 0.0});
     sphere2_.update();
 
-    size_t vertex_count = std::accumulate(shapes_.begin(), shapes_.end(), 0UL, [](auto sum, auto& s) {
+    size_t const vertex_count = std::accumulate(shapes_.begin(), shapes_.end(), 0UL, [](auto sum, auto& s) {
         return sum + s->vertex_count();
     });
 
     /////// VBO ////////
-    size_t vertex_data_size = vertex_count * sizeof(Vertex);
+    size_t const vertex_data_size = vertex_count * sizeof(Vertex);
 
     alloc_vbo(vertex_data_size);
 
@@ -72,8 +72,8 @@ Scene::Scene() :
 
     //////// IBO ////////
     assert(vertex_count % 3 == 0); // We expect to see 3 vertices on each polygon
-    size_t index_count = vertex_count;
-    size_t index_data_size = index_count * sizeof(uint32_t);
+    size_t const index_count = vertex_count;
+    size_t const index_data_size = index_count * sizeof(uint32_t);
 
     indices_.resize(index_count);
     std::iota(indices_.begin(), indices_.end(), 0);
@@ -99,7 +99,6 @@ void Scene::present_imgui()
     ImGui::Begin("Configuration");
     ImGui::Text("Show the animated cube");
     ImGui::Text("Application average %.1f FPS", ImGui::GetIO().Framerate);
-    ImGui::SliderFloat2("Rotation", glm::value_ptr(camera_rotation_), 0, 360);
 
     if (ImGui::SliderFloat3("Light Position", glm::value_ptr(light_position_), -5, 5)) {
         light_.set_position(light_position_);
@@ -107,7 +106,7 @@ void Scene::present_imgui()
         upload_vbo(light_.vbo_data(), light_.vbo_offset_bytes(), light_.vertex_count() * sizeof(Vertex));
     }
 
-    if (ImGui::SliderFloat("Cuboid Size", &cube_size_, 0.0F, 2.0F)) {
+    if (ImGui::SliderFloat("Scale", &cube_size_, 0.0F, 2.0F)) {
         sphere1_.set_size(cube_size_ * 0.5F);
         sphere1_.update();
 
@@ -157,6 +156,19 @@ void Scene::render()
 void Scene::resize(int width, int height)
 {
     auto aspect_ratio = static_cast<float>(width) / static_cast<float>(height);
-    auto proj = glm::perspective(glm::quarter_pi<float>(), aspect_ratio, 2.0F, 100.0F);
+    auto proj = glm::perspective(glm::quarter_pi<float>(), aspect_ratio, 1.0F, 100.0F);
     set_uniform_data("proj", proj);
+}
+
+void Scene::drag_mouse(int x, int y) {
+    float const x_rotation = static_cast<float>(x) / 5.0F;
+    float const y_rotation = static_cast<float>(y) / 5.0F;
+    // spdlog::info("dragging mouse {} {}", x_rotation, y_rotation);
+    camera_rotation_.y += x_rotation;
+    camera_rotation_.x += y_rotation;
+}
+
+void Scene::scroll_mouse(int val)
+{
+    camera_position_.z += static_cast<float>(val) * 0.1F;
 }

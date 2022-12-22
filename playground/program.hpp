@@ -39,6 +39,10 @@ protected:
 
     virtual void resize(int /*width*/, int /*height*/) {}
 
+    virtual void drag_mouse(int /*x*/, int /*y*/) {};
+
+    virtual void scroll_mouse(int /*val*/) {};
+
     void set_uniform_data(std::string const& name, float const& data);
 
     void set_uniform_data(std::string const& name, glm::mat4 const& data);
@@ -62,8 +66,8 @@ protected:
 private:
     bool keep_running_{true};
 
-    std::string const vertex_shader_{};
-    std::string const fragment_shader_{};
+    std::string vertex_shader_{};
+    std::string fragment_shader_{};
 
     int width_{};
     int height_{};
@@ -84,6 +88,8 @@ private:
     void compile_shader(std::string const& source_code, GLuint shader_id);
     void link_program();
     GLint get_uniform_location(std::string const& name);
+
+    void process_window_resize(int width, int height);
 };
 
 } // namespace playground

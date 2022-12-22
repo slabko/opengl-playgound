@@ -17,6 +17,8 @@ public:
     void update() override;
     void present_imgui() override;
     void resize(int width, int height) override;
+    void drag_mouse(int x, int y) override;
+    void scroll_mouse(int val) override;
 
 private:
     Sphere light_{1, false};
@@ -29,7 +31,7 @@ private:
     std::vector<uint32_t> indices_{};
 
     float cube_size_{1.0F};
-    glm::vec3 camera_position_{0.0F, 1.0F, 5.0F};
+    glm::vec3 camera_position_{0.0F, 0.0F, 5.0F};
     glm::vec2 camera_rotation_{0.0F, 0.0F};
     glm::vec3 light_position_{0.0F, 1.5F, -0.5F};
 

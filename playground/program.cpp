@@ -142,17 +142,29 @@ void Program::start()
         SDL_Event e;
         while (SDL_PollEvent(&e)) {
             ImGui_ImplSDL2_ProcessEvent(&e);
-            if (e.type == SDL_QUIT) {
-                keep_running_ = false;
+
+            // Ignore events that are captured by ImGUI
+            auto& io = ImGui::GetIO();
+            if (io.WantCaptureMouse || io.WantCaptureKeyboard) {
+                continue;
             }
 
-            if (e.type == SDL_WINDOWEVENT) {
+            switch (e.type) {
+            case SDL_QUIT:
+                keep_running_ = false;
+                break;
+            case SDL_WINDOWEVENT:
                 if (e.window.event == SDL_WINDOWEVENT_SIZE_CHANGED) {
-                    width_ = e.window.data1;
-                    height_ = e.window.data2;
-                    resize(width_, height_);
-                    glViewport(0, 0, width_, height_);
+                    process_window_resize(e.window.data1, e.window.data2);
                 }
+                break;
+            case SDL_MOUSEMOTION:
+                if (e.motion.state == SDL_BUTTON_LMASK) {
+                    drag_mouse(e.motion.xrel, e.motion.yrel);
+                }
+                break;
+            case SDL_MOUSEWHEEL:
+                scroll_mouse(e.wheel.y);
             }
         }
 
@@ -175,8 +187,8 @@ void Program::start()
 
 void Program::set_uniform_data(std::string const& name, float const& data)
 {
-     auto id = get_uniform_location(name);
-     glUniform1f(id, data);
+    auto id = get_uniform_location(name);
+    glUniform1f(id, data);
 }
 
 void Program::set_uniform_data(std::string const& name, glm::mat4 const& data)
@@ -315,5 +327,13 @@ GLint Program::get_uniform_location(std::string const& name)
         throw std::runtime_error(fmt::format("Uniform name `{}` is not found", name));
     }
     return id;
+}
+
+void Program::process_window_resize(int width, int height)
+{
+    width_ = width;
+    height_ = height;
+    resize(width_, height_);
+    glViewport(0, 0, width_, height_);
 }
 } // namespace playground
