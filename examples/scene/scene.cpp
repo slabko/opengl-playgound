@@ -100,6 +100,9 @@ void Scene::present_imgui()
     ImGui::Text("Show the animated cube");
     ImGui::Text("Application average %.1f FPS", ImGui::GetIO().Framerate);
 
+    auto mouse = mouse_position();
+    ImGui::Text("Mouse position: %d  %d", mouse.x, mouse.y);
+
     if (ImGui::SliderFloat3("Light Position", glm::value_ptr(light_position_), -5, 5)) {
         light_.set_position(light_position_);
         light_.update();
@@ -160,12 +163,12 @@ void Scene::resize(int width, int height)
     set_uniform_data("proj", proj);
 }
 
-void Scene::drag_mouse(int x, int y) {
-    float const x_rotation = static_cast<float>(x) / 5.0F;
-    float const y_rotation = static_cast<float>(y) / 5.0F;
-    // spdlog::info("dragging mouse {} {}", x_rotation, y_rotation);
-    camera_rotation_.y += x_rotation;
-    camera_rotation_.x += y_rotation;
+void Scene::drag_mouse(glm::ivec2 offset) {
+    // Dragging the mouse along x causes rotation about y and vice versa
+    float const x_rotation = static_cast<float>(offset.y) / 5.0F;
+    float const y_rotation = static_cast<float>(offset.x) / 5.0F;
+    camera_rotation_.y += y_rotation;
+    camera_rotation_.x += x_rotation;
 }
 
 void Scene::scroll_mouse(int val)

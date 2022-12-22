@@ -17,7 +17,7 @@ public:
     void update() override;
     void present_imgui() override;
     void resize(int width, int height) override;
-    void drag_mouse(int x, int y) override;
+    void drag_mouse(glm::ivec2 offset) override;
     void scroll_mouse(int val) override;
 
 private:

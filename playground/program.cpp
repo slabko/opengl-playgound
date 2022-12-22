@@ -159,8 +159,9 @@ void Program::start()
                 }
                 break;
             case SDL_MOUSEMOTION:
+                mouse_position_ = {e.motion.x, e.motion.y};
                 if (e.motion.state == SDL_BUTTON_LMASK) {
-                    drag_mouse(e.motion.xrel, e.motion.yrel);
+                    drag_mouse({e.motion.xrel, e.motion.yrel});
                 }
                 break;
             case SDL_MOUSEWHEEL:

@@ -39,9 +39,11 @@ protected:
 
     virtual void resize(int /*width*/, int /*height*/) {}
 
-    virtual void drag_mouse(int /*x*/, int /*y*/) {};
+    virtual void drag_mouse(glm::ivec2 /*offset*/){};
 
-    virtual void scroll_mouse(int /*val*/) {};
+    virtual void scroll_mouse(int /*val*/){};
+
+    glm::ivec2 mouse_position() { return mouse_position_; };
 
     void set_uniform_data(std::string const& name, float const& data);
 
@@ -71,6 +73,8 @@ private:
 
     int width_{};
     int height_{};
+
+    glm::ivec2 mouse_position_{};
 
     SDL_Window* window_{};
     SDL_GLContext context_{};
