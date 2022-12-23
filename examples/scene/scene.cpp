@@ -80,17 +80,6 @@ Scene::Scene() :
     alloc_ibo(index_data_size);
     upload_ibo(indices_.data(), 0, index_data_size);
 
-    /////// Uniform Data ////////
-    auto model = glm::mat4(1.0F);
-    auto view = glm::translate(glm::mat4(1.0F), {0.0F, 0.0F, -5.0F});
-    auto proj = glm::perspective(glm::quarter_pi<float>(), 1920.0F / 1080.0F, 2.0F, 100.0F);
-
-    set_uniform_data("model", model);
-    set_uniform_data("view", view);
-    set_uniform_data("proj", proj);
-
-    set_uniform_data("light_position", light_position_);
-    set_uniform_data("camera_position", glm::vec3{0.0F, 0.0F, 5.0F});
     set_uniform_data("glow", 0.0F);
 }
 
@@ -125,23 +114,25 @@ void Scene::present_imgui()
     ImGui::End();
 }
 
-void Scene::update_view_projection()
+void Scene::update()
 {
+    auto model = glm::mat4(1.0F);
+    set_uniform_data("model", model);
+
     auto view = glm::mat4(1.0F);
     view = glm::translate(view, {-camera_position_.x, -camera_position_.y, -camera_position_.z});
     view = glm::rotate(view, glm::radians(camera_rotation_.x), {1.0F, 0.0F, 0.0F});
     view = glm::rotate(view, glm::radians(camera_rotation_.y), {0.0F, 1.0F, 0.0F});
-
     set_uniform_data("view", view);
+
+    auto size = static_cast<glm::vec2>(window_size());
+    auto proj = glm::perspective(glm::quarter_pi<float>(), size.x / size.y, 1.0F, 100.0F);
+    set_uniform_data("proj", proj);
 
     // Undo camera transformation
     auto camera_position = glm::inverse(view) * glm::vec4{0.0F, 0.0F, 0.0F, 1.0F};
     set_uniform_data("camera_position", glm::vec3(camera_position));
-}
 
-void Scene::update()
-{
-    update_view_projection();
     set_uniform_data("light_position", light_position_);
 }
 
@@ -154,13 +145,6 @@ void Scene::render()
     // Objects
     set_uniform_data("glow", 0.0F);
     draw_indices(indices_.size(), Triangles, light_.vertex_count());
-}
-
-void Scene::resize(int width, int height)
-{
-    auto aspect_ratio = static_cast<float>(width) / static_cast<float>(height);
-    auto proj = glm::perspective(glm::quarter_pi<float>(), aspect_ratio, 1.0F, 100.0F);
-    set_uniform_data("proj", proj);
 }
 
 void Scene::drag_mouse(glm::ivec2 offset) {

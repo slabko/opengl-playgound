@@ -12,7 +12,7 @@
 namespace playground {
 
 Program::Program(std::string const& vertex_shader, std::string const& fragment_shader, int width, int height) :
-  vertex_shader_{vertex_shader}, fragment_shader_{fragment_shader}, width_{width}, height_{height}
+  vertex_shader_{vertex_shader}, fragment_shader_{fragment_shader}, window_size_{width, height}
 {
     spdlog::info("initializing");
 
@@ -38,7 +38,7 @@ Program::Program(std::string const& vertex_shader, std::string const& fragment_s
       "Graphics Engine",
       SDL_WINDOWPOS_UNDEFINED,
       SDL_WINDOWPOS_UNDEFINED,
-      width_, height_,
+      window_size_.x, window_size_.y,
       SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE);
     if (!window_) {
         throw std::runtime_error("Error creating SDL window");
@@ -332,9 +332,8 @@ GLint Program::get_uniform_location(std::string const& name)
 
 void Program::process_window_resize(int width, int height)
 {
-    width_ = width;
-    height_ = height;
-    resize(width_, height_);
-    glViewport(0, 0, width_, height_);
+    window_size_ = {width, height};
+    resize(window_size_);
+    glViewport(0, 0, width, height);
 }
 } // namespace playground

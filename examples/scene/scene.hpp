@@ -16,7 +16,6 @@ public:
     void render() override;
     void update() override;
     void present_imgui() override;
-    void resize(int width, int height) override;
     void drag_mouse(glm::ivec2 offset) override;
     void scroll_mouse(int val) override;
 
@@ -34,8 +33,6 @@ private:
     glm::vec3 camera_position_{0.0F, 0.0F, 5.0F};
     glm::vec2 camera_rotation_{0.0F, 0.0F};
     glm::vec3 light_position_{0.0F, 1.5F, -0.5F};
-
-    void update_view_projection();
 };
 
 #endif // EXAMPLES_CUBE_HPP

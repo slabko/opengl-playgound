@@ -37,11 +37,13 @@ protected:
 
     virtual void present_imgui() {}
 
-    virtual void resize(int /*width*/, int /*height*/) {}
+    virtual void resize(glm::ivec2 /*new_size*/) {}
 
     virtual void drag_mouse(glm::ivec2 /*offset*/){};
 
     virtual void scroll_mouse(int /*val*/){};
+
+    glm::ivec2 window_size() { return window_size_; }
 
     glm::ivec2 mouse_position() { return mouse_position_; };
 
@@ -71,8 +73,7 @@ private:
     std::string vertex_shader_{};
     std::string fragment_shader_{};
 
-    int width_{};
-    int height_{};
+    glm::ivec2 window_size_{};
 
     glm::ivec2 mouse_position_{};
 
