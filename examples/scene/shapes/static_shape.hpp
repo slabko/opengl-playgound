@@ -9,7 +9,7 @@
 class StaticShape : public Shape {
 public:
     StaticShape() = default;
-    explicit StaticShape(std::shared_ptr<VertexModel> model);
+    explicit StaticShape(std::shared_ptr<VertexModel const> model);
 
     StaticShape(StaticShape const&) = default;
     StaticShape(StaticShape&&) noexcept = default;
@@ -26,7 +26,7 @@ public:
 
 private:
     std::vector<Vertex> vertices_{};
-    std::shared_ptr<VertexModel> model_{};
+    std::shared_ptr<VertexModel const> model_{};
 };
 
 #endif // PLAYGROUND_STATIC_SHAPE_HPP

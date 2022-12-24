@@ -23,7 +23,7 @@ template<class T>
 T load_model(std::string const& file_path)
 {
     auto model = read_vertex_model(file_path);
-    auto res = T{std::make_shared<VertexModel>(std::move(model))};
+    auto res = T{std::make_shared<VertexModel const>(std::move(model))};
     return res;
 }
 
