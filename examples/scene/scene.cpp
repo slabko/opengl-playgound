@@ -7,16 +7,11 @@
 #include <glm/ext/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/mat4x4.hpp>
-#include <gsl/narrow>
 #include <imgui.h>
-
-#include "../../playground/png.hpp"
 
 #include "vertex.hpp"
 
 #include "scene.hpp"
-
-#include <spdlog/spdlog.h>
 
 static std::string read_file(std::string const& path)
 {
@@ -31,23 +26,30 @@ Scene::Scene() :
   playground::Program{
     read_file("GLSL/vertex.glsl"),
     read_file("GLSL/fragment.glsl")},
-  shapes_{&light_, &sphere1_, &sphere2_, &cube1_}
+  shapes_{&light_, &sphere1_, &sphere2_, &cube1_, &bunny_} {}
+
+void Scene::init()
 {
+    bunny_prototype_ = std::make_unique<StaticShape const>(load_model<StaticShape>("resources/bunny.obj"));
+    bunny_ = *bunny_prototype_;
+    bunny_.update();
+
     light_.set_size(0.2F);
     light_.set_position(light_position_);
     light_.update();
 
-    sphere1_.set_size(0.5);
+    sphere1_.set_size(0.01F);
+    sphere1_.set_position({0.0, 0.0, 0.0});
     sphere1_.update();
 
     cube1_.set_width(10.0F);
     cube1_.set_depth(10.0F);
     cube1_.set_height(0.5F);
-    cube1_.set_position({0.0F, -1.0F, 0.0F});
+    cube1_.set_position({0.0F, -0.25F, 0.0F});
     cube1_.update();
 
     sphere2_.set_size(0.5);
-    sphere2_.set_position({1.0, 0.0, 0.0});
+    sphere2_.set_position({2.0, 0.0, 0.0});
     sphere2_.update();
 
     size_t const vertex_count = std::accumulate(shapes_.begin(), shapes_.end(), 0UL, [](auto sum, auto& s) {
@@ -86,11 +88,16 @@ Scene::Scene() :
 void Scene::present_imgui()
 {
     ImGui::Begin("Configuration");
-    ImGui::Text("Show the animated cube");
     ImGui::Text("Application average %.1f FPS", ImGui::GetIO().Framerate);
 
     auto mouse = mouse_position();
     ImGui::Text("Mouse position: %d  %d", mouse.x, mouse.y);
+    ImGui::Text("Camera position: %f  %f  %f", camera_position_.x, camera_position_.y, camera_position_.z);
+    ImGui::Text("Camera rotation: %f  %f", camera_rotation_.x, camera_rotation_.y);
+    ImGui::Text("World rotation: %f  %f", world_rotation_.x, world_rotation_.y);
+
+    ImGui::SliderFloat("Zoom", &camera_zoom_, glm::half_pi<float>(), glm::quarter_pi<float>());
+    ImGui::SliderFloat("Lens shift", &lens_shift_, -1.0F, 1.0F);
 
     if (ImGui::SliderFloat3("Light Position", glm::value_ptr(light_position_), -5, 5)) {
         light_.set_position(light_position_);
@@ -120,13 +127,20 @@ void Scene::update()
     set_uniform_data("model", model);
 
     auto view = glm::mat4(1.0F);
-    view = glm::translate(view, {-camera_position_.x, -camera_position_.y, -camera_position_.z});
     view = glm::rotate(view, glm::radians(camera_rotation_.x), {1.0F, 0.0F, 0.0F});
     view = glm::rotate(view, glm::radians(camera_rotation_.y), {0.0F, 1.0F, 0.0F});
+    view = glm::translate(view, {-camera_position_.x, -camera_position_.y, -camera_position_.z});
+    view = glm::rotate(view, glm::radians(world_rotation_.x), {1.0F, 0.0F, 0.0F});
+    view = glm::rotate(view, glm::radians(world_rotation_.y), {0.0F, 1.0F, 0.0F});
     set_uniform_data("view", view);
 
+    static float const znear = 1.00F;
+    static float const zfar = 100.0F;
     auto size = static_cast<glm::vec2>(window_size());
-    auto proj = glm::perspective(glm::quarter_pi<float>(), size.x / size.y, 1.0F, 100.0F);
+    auto const aspect = size.x / size.y;
+    auto height = glm::tan(0.5F * camera_zoom_) * znear;
+    auto width = height * aspect;
+    auto proj = glm::frustum(-width, width, -height + lens_shift_, height + lens_shift_, znear, zfar);
     set_uniform_data("proj", proj);
 
     // Undo camera transformation
@@ -147,12 +161,22 @@ void Scene::render()
     draw_indices(indices_.size(), Triangles, light_.vertex_count());
 }
 
-void Scene::drag_mouse(glm::ivec2 offset) {
+void Scene::drag_mouse(glm::ivec2 offset, KeyModifiers modifiers)
+{
     // Dragging the mouse along x causes rotation about y and vice versa
+
     float const x_rotation = static_cast<float>(offset.y) / 5.0F;
     float const y_rotation = static_cast<float>(offset.x) / 5.0F;
-    camera_rotation_.y += y_rotation;
-    camera_rotation_.x += x_rotation;
+
+    switch (modifiers) {
+    case None:
+        world_rotation_.y += y_rotation;
+        world_rotation_.x += x_rotation;
+        break;
+    case Ctrl:
+        camera_rotation_.y += y_rotation;
+        camera_rotation_.x += x_rotation;
+    }
 }
 
 void Scene::scroll_mouse(int val)

@@ -27,6 +27,8 @@ configure_file(textures/chest.png textures/chest.png COPYONLY)
 configure_file(examples/scene/GLSL/fragment.glsl GLSL/fragment.glsl COPYONLY)
 configure_file(examples/scene/GLSL/vertex.glsl GLSL/vertex.glsl COPYONLY)
 
+configure_file(examples/scene/resources/bunny.obj resources/bunny.obj COPYONLY)
+
 find_package(Eigen3 3.4 REQUIRED NO_MODULE)
 find_package(OpenMP REQUIRED)
 find_package(fmt REQUIRED)
@@ -51,8 +53,10 @@ add_executable(playground
     examples/quad/quad.cpp
     examples/game_of_life/game_of_life.cpp
     examples/scene/scene.cpp
-        examples/scene/shapes/cuboid.cpp
+    examples/scene/vertex.cpp
+    examples/scene/shapes/cuboid.cpp
     examples/scene/shapes/sphere.cpp
+    examples/scene/shapes/static_shape.cpp
 
     ${GLAD_FILES}
     ${IMGUI_FILES}

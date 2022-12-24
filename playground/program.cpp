@@ -161,7 +161,13 @@ void Program::start()
             case SDL_MOUSEMOTION:
                 mouse_position_ = {e.motion.x, e.motion.y};
                 if (e.motion.state == SDL_BUTTON_LMASK) {
-                    drag_mouse({e.motion.xrel, e.motion.yrel});
+                    drag_mouse({e.motion.xrel, e.motion.yrel}, ctrl_is_pressed_ ? Ctrl : None);
+                }
+                break;
+            case SDL_KEYDOWN:
+            case SDL_KEYUP:
+                if (e.key.keysym.sym == SDLK_LCTRL) {
+                    ctrl_is_pressed_ = e.type == SDL_KEYDOWN;
                 }
                 break;
             case SDL_MOUSEWHEEL:

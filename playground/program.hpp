@@ -18,6 +18,11 @@ public:
         Lines = GL_LINES
     };
 
+    enum KeyModifiers {
+        None = 0,
+        Ctrl = 1 << 0,
+    };
+
     Program(std::string const& vertex_shader, std::string const& fragment_shader, int width = 1920, int height = 1080);
 
     Program(Program const&) = delete;
@@ -39,7 +44,7 @@ protected:
 
     virtual void resize(glm::ivec2 /*new_size*/) {}
 
-    virtual void drag_mouse(glm::ivec2 /*offset*/){};
+    virtual void drag_mouse(glm::ivec2 /*offset*/, KeyModifiers /*modifiers*/){};
 
     virtual void scroll_mouse(int /*val*/){};
 
@@ -76,6 +81,8 @@ private:
     glm::ivec2 window_size_{};
 
     glm::ivec2 mouse_position_{};
+
+    bool ctrl_is_pressed_{false};
 
     SDL_Window* window_{};
     SDL_GLContext context_{};
