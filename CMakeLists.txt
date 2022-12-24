@@ -29,7 +29,6 @@ configure_file(examples/scene/GLSL/vertex.glsl GLSL/vertex.glsl COPYONLY)
 
 configure_file(examples/scene/resources/bunny.obj resources/bunny.obj COPYONLY)
 
-find_package(Eigen3 3.4 REQUIRED NO_MODULE)
 find_package(OpenMP REQUIRED)
 find_package(fmt REQUIRED)
 find_package(spdlog REQUIRED)
@@ -50,8 +49,6 @@ add_executable(playground
     playground/texture.cpp
     playground/png.cpp
 
-    examples/quad/quad.cpp
-    examples/game_of_life/game_of_life.cpp
     examples/scene/scene.cpp
     examples/scene/vertex.cpp
     examples/scene/shapes/cuboid.cpp
@@ -75,7 +72,6 @@ target_link_libraries(playground
     OpenGL::GL 
     glm::glm 
     SDL2::SDL2 
-    Eigen3::Eigen
     OpenMP::OpenMP_CXX
     PNG::PNG
     Boost::container
