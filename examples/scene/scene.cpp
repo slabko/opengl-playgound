@@ -103,8 +103,12 @@ void Scene::present_imgui()
         sphere2_.set_size(scale_ * 0.5F);
         sphere2_.update();
 
+        bunny_.set_scale(scale_);
+        bunny_.update();
+
         upload_vbo(sphere1_.vbo_data(), sphere1_.vbo_offset_bytes(), sphere1_.vertex_count() * sizeof(Vertex));
         upload_vbo(sphere2_.vbo_data(), sphere2_.vbo_offset_bytes(), sphere2_.vertex_count() * sizeof(Vertex));
+        upload_vbo(bunny_.vbo_data(), bunny_.vbo_offset_bytes(), bunny_.vertex_count() * sizeof(Vertex));
     }
 
     ImGui::End();

@@ -22,9 +22,13 @@ public:
 
     [[nodiscard]] Vertex const* vbo_data() const override { return vertices_.data(); }
 
+    [[nodiscard]]  float scale() { return scale_; }
+    void set_scale(float scale);
+
     void update() override;
 
 private:
+    float scale_{1.0};
     std::vector<Vertex> vertices_{};
     std::shared_ptr<VertexModel const> model_{};
 };
