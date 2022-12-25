@@ -26,20 +26,19 @@ private:
     Sphere sphere2_{2, false};
     Cuboid cube1_{};
     StaticShape bunny_{};
-
     std::unique_ptr<StaticShape const> bunny_prototype_{nullptr};
-
     std::vector<Shape*> shapes_{};
-
     std::vector<uint32_t> indices_{};
-
-    float cube_size_{1.0F};
-    float camera_zoom_{glm::half_pi<float>()};
+    float scale_{1.0F};
+    float camera_zoom_{glm::quarter_pi<float>()};
     float lens_shift_{};
     glm::vec3 camera_position_{0.0F, 0.0F, 5.0F};
     glm::vec2 camera_rotation_{0.0F, 0.0F};
-    glm::vec2 world_rotation_{0.0F, 0.0F};
-    glm::vec3 light_position_{0.0F, 1.5F, -0.5F};
+    glm::vec2 world_rotation_{20.0F, 0.0F};
+    glm::vec3 light_position_{-2.0F, 3.5F, 5.0F};
+
+    glm::mat4 view_matrix();
+    glm::mat4 proj_matrix();
 };
 
 #endif // EXAMPLES_CUBE_HPP

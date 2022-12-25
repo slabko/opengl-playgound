@@ -22,6 +22,8 @@ public:
     [[nodiscard]] float depth() const { return depth_; }
     void set_depth(float depth);
 
+    void set_dimensions(float width, float height, float depth);
+
     [[nodiscard]] size_t vertex_count() const override { return vertices_.size(); }
 
     [[nodiscard]] Vertex const* vbo_data() const override { return vertices_.data(); }

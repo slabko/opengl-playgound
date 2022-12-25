@@ -76,6 +76,14 @@ void Cuboid::set_depth(float depth)
     set_needs_update();
 }
 
+void Cuboid::set_dimensions(float width, float height, float depth)
+{
+    height_ = height;
+    width_ = width;
+    depth_ = depth;
+    set_needs_update();
+}
+
 void Cuboid::update()
 {
     auto unit = create_unit_cube();
