@@ -17,8 +17,17 @@ struct Vertex {
 
 using VertexModel = std::vector<Vertex>;
 
+/*******************************************************************************
+ * parses and wavefront file and returns a 3D model,
+ * i.e. vertices grouped by 3 to represent a polygon and normal vector
+ * for each vertex. The normal vectors are automatically generated based
+ * on normal vectors of adjacent polygons for each vertex
+ ******************************************************************************/
 VertexModel read_vertex_model(std::string const& file_path);
 
+/*******************************************************************************
+ * loads a model and instantiates and object feeding it with this model
+ ******************************************************************************/
 template<class T>
 T load_model(std::string const& file_path)
 {

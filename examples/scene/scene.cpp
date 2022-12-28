@@ -38,7 +38,7 @@ void Scene::init()
     light_.update();
 
     sphere1_.set_size(0.5F);
-    sphere1_.set_position({-2.0, 1.0, 0.0});
+    sphere1_.set_position({-2.0, 0.5, 0.0});
     sphere1_.update();
 
     cube1_.set_dimensions(10.0F, 0.5F, 10.0F);
@@ -46,7 +46,7 @@ void Scene::init()
     cube1_.update();
 
     sphere2_.set_size(0.5);
-    sphere2_.set_position({2.0, 1.0, 0.0});
+    sphere2_.set_position({2.0, 0.5, 0.0});
     sphere2_.update();
 
     size_t const vertex_count = std::accumulate(shapes_.begin(), shapes_.end(), 0UL, [](auto sum, auto& s) {
