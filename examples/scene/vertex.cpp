@@ -6,21 +6,18 @@
 
 #include "vertex.hpp"
 
-std::pair<std::vector<glm::vec3>, std::vector<glm::uvec3>> parse_wavefront_file(std::string const& file_path);
+static std::pair<std::vector<glm::vec3>, std::vector<glm::uvec3>> parse_wavefront_file(std::string const& file_path);
 
-template <class InputIt>
-static std::pair<glm::vec3, glm::vec3> elementwise_minmax(InputIt first, InputIt last);
+static std::pair<glm::vec3, glm::vec3> elementwise_minmax(std::vector<glm::vec3> const& vertices);
 
 static std::vector<glm::vec3> calculate_mean_normals(
   std::vector<glm::vec3> const& vertices,
   std::vector<glm::uvec3> const& indices);
 
-std::array<glm::vec3, 3> polygon_vertices(std::vector<glm::vec3> const& vertices, glm::uvec3 polygon_indices);
-
 VertexModel read_vertex_model(std::string const& file_path)
 {
     auto [raw_vertices, raw_indices] = parse_wavefront_file(file_path);
-    auto [min_p, max_p] = elementwise_minmax(raw_vertices.cbegin(), raw_vertices.cend());
+    auto [min_p, max_p] = elementwise_minmax(raw_vertices);
 
     auto normals = calculate_mean_normals(raw_vertices, raw_indices);
 
@@ -33,9 +30,9 @@ VertexModel read_vertex_model(std::string const& file_path)
     res.reserve(raw_indices.size() * 3);
     for (auto const& idx : raw_indices) {
         for (glm::length_t i{}; i < idx.length(); ++i) {
-            auto v = raw_vertices[static_cast<size_t>(idx[i]) - 1];
+            auto v = raw_vertices[static_cast<size_t>(idx[i])];
             v -= offset;
-            res.emplace_back(v * scale, normals[idx[i] - 1]);
+            res.emplace_back(v * scale, normals[idx[i]]);
         }
     }
 
@@ -71,7 +68,7 @@ std::pair<std::vector<glm::vec3>, std::vector<glm::uvec3>> parse_wavefront_file(
         case 'f':
             int a, b, c; // NOLINT(cppcoreguidelines-init-variables)
             content_file >> a >> b >> c;
-            raw_indices.emplace_back(a, b, c);
+            raw_indices.emplace_back(a - 1, b - 1, c - 1);
             content_file.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
             break;
         default:
@@ -92,8 +89,7 @@ std::pair<std::vector<glm::vec3>, std::vector<glm::uvec3>> parse_wavefront_file(
  * Calculates elementwise min and max of a iterator of vectors.
  * Example: given {-1, 1, 0} and {0, -1, 1} returns {-1, -1, 0} and {0, 1, 1}
  ******************************************************************************/
-template <class InputIt>
-static std::pair<glm::vec3, glm::vec3> elementwise_minmax(InputIt first, InputIt last)
+std::pair<glm::vec3, glm::vec3> elementwise_minmax(std::vector<glm::vec3> const& vertices)
 {
     auto elementwise_min = [](glm::vec3 a, glm::vec3 b) {
         return glm::min(a, b);
@@ -104,12 +100,12 @@ static std::pair<glm::vec3, glm::vec3> elementwise_minmax(InputIt first, InputIt
     };
 
     auto max_v = std::reduce(
-      first, last,
+      vertices.cbegin(), vertices.cend(),
       glm::vec3{std::numeric_limits<float>::lowest()},
       elementwise_max);
 
     auto min_v = std::reduce(
-      first, last,
+      vertices.cbegin(), vertices.cend(),
       glm::vec3{std::numeric_limits<float>::max()},
       elementwise_min);
 
@@ -121,7 +117,7 @@ static std::pair<glm::vec3, glm::vec3> elementwise_minmax(InputIt first, InputIt
  * calculates their normal vectors and assigns mean of these normal
  * to the given vertex
  ******************************************************************************/
-static std::vector<glm::vec3> calculate_mean_normals(
+std::vector<glm::vec3> calculate_mean_normals(
   std::vector<glm::vec3> const& vertices,
   std::vector<glm::uvec3> const& indices)
 {
@@ -129,33 +125,18 @@ static std::vector<glm::vec3> calculate_mean_normals(
     std::vector<size_t> counts(vertices.size()); // we need counts for the rolling mean
 
     for (auto const& polygon_indices : indices) {
-        auto const [a, b, c] = polygon_vertices(vertices, polygon_indices);
+        auto const& a = vertices[polygon_indices[0]];
+        auto const& b = vertices[polygon_indices[1]];
+        auto const& c = vertices[polygon_indices[2]];
         auto norm = glm::normalize(glm::cross(b - a, c - a));
 
         for (glm::length_t i{}; i < polygon_indices.length(); ++i) {
-            auto idx = polygon_indices[i] - 1;
-            auto n = ++counts[idx];
+            auto idx = polygon_indices[i];
+            auto n = static_cast<float>(++counts[idx]);
             auto mean_norm = res[idx];
-            res[idx] = mean_norm + (1.0F / static_cast<float>(n)) * (norm - mean_norm);
+            res[idx] = glm::normalize(mean_norm + (1.0F / n) * (norm - mean_norm));
         }
     }
 
-    for (auto& norm : res) {
-        norm = glm::normalize(norm);
-    }
-
-    return res;
-}
-
-/*******************************************************************************
- * given a list of all polygons in the model the function returns three vectors
- * from a vector representing indices of a single polygon
- *******************************************************************************/
-std::array<glm::vec3, 3> polygon_vertices(std::vector<glm::vec3> const& vertices, glm::uvec3 polygon_indices)
-{
-    std::array<glm::vec3, 3> res{};
-    for (size_t i{}; i < polygon_indices.length(); ++i) {
-        res.at(i) = vertices.at(polygon_indices[static_cast<glm::length_t>(i)] - 1);
-    }
     return res;
 }
