@@ -20,13 +20,14 @@ endif ()
 
 project(playground)
 
-configure_file(textures/crate.png textures/crate.png COPYONLY)
-configure_file(textures/chest.png textures/chest.png COPYONLY)
+file(GLOB TEXTURES examples/scene/textures/*)
+file(COPY ${TEXTURES} DESTINATION textures/)
 
-configure_file(examples/scene/GLSL/fragment.glsl GLSL/fragment.glsl COPYONLY)
-configure_file(examples/scene/GLSL/vertex.glsl GLSL/vertex.glsl COPYONLY)
+file(GLOB SHADERS examples/scene/GLSL/*)
+file(COPY ${SHADERS} DESTINATION GLSL/)
 
-configure_file(examples/scene/resources/bunny.obj resources/bunny.obj COPYONLY)
+file(GLOB RESOURCES examples/scene/resources/*)
+file(COPY ${RESOURCES} DESTINATION resources/)
 
 find_package(fmt REQUIRED)
 find_package(spdlog REQUIRED)

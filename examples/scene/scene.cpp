@@ -23,13 +23,18 @@ static std::string read_file(std::string const& path)
 }
 
 Scene::Scene() :
-  playground::Program{
-    read_file("GLSL/vertex.glsl"),
-    read_file("GLSL/fragment.glsl")},
   shapes_{&light_, &sphere1_, &sphere2_, &cube1_, &bunny_} {}
 
 void Scene::init()
 {
+    program_ = create_program(
+      read_file("GLSL/vertex.glsl"),
+      read_file("GLSL/fragment.glsl"));
+
+    light_program_ = create_program(
+      read_file("GLSL/light_vertex.glsl"),
+      read_file("GLSL/light_fragment.glsl"));
+
     bunny_prototype_ = std::make_unique<StaticShape const>(load_model<StaticShape>("resources/bunny.obj"));
     bunny_ = *bunny_prototype_;
     bunny_.update();
@@ -54,6 +59,7 @@ void Scene::init()
     });
 
     /////// VBO ////////
+    use_program(*program_);
     size_t const vertex_data_size = vertex_count * sizeof(Vertex);
     alloc_vbo(vertex_data_size);
     size_t vbo_data_offset = 0;
@@ -126,20 +132,22 @@ void Scene::render()
     // find the camera position from the view matrix
     auto camera_position = glm::inverse(view) * glm::vec4{0.0F, 0.0F, 0.0F, 1.0F};
 
+    // Objects
+    use_program(*program_);
     set_uniform_data("view", view);
     set_uniform_data("proj", proj);
     set_uniform_data("light_position", light_position_);
     set_uniform_data("camera_position", glm::vec3(camera_position));
 
-    // Light
-    set_uniform_data("glow", 1.0F);
-    set_uniform_data("model", glm::translate(glm::mat4(1.0F), light_position_));
-    draw_indices(light_.vertex_count());
-
-    // Objects
-    set_uniform_data("glow", 0.0F);
     set_uniform_data("model", glm::mat4(1.0F));
     draw_indices(indices_.size(), Triangles, light_.vertex_count());
+
+    // Light
+    use_program(*light_program_);
+    set_uniform_data("view", view);
+    set_uniform_data("proj", proj);
+    set_uniform_data("model", glm::translate(glm::mat4(1.0F), light_position_));
+    draw_indices(light_.vertex_count());
 }
 
 void Scene::drag_mouse(glm::ivec2 offset, KeyModifiers modifiers)

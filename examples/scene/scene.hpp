@@ -1,16 +1,19 @@
 #ifndef EXAMPLES_CUBE_HPP
 #define EXAMPLES_CUBE_HPP
 
+#include <memory>
+
+#include <glm/glm.hpp>
+#include <glm/gtc/constants.hpp>
+
+#include "../../playground/application.hpp"
 #include "../../playground/program.hpp"
 #include "../../playground/texture.hpp"
 #include "shapes/cuboid.hpp"
 #include "shapes/sphere.hpp"
 #include "shapes/static_shape.hpp"
 
-#include <glm/glm.hpp>
-#include <glm/gtc/constants.hpp>
-
-class Scene : public playground::Program {
+class Scene : public playground::Application {
 public:
     Scene();
     void init();
@@ -21,6 +24,9 @@ public:
     void scroll_mouse(int val) override;
 
 private:
+    std::unique_ptr<playground::Program> program_{nullptr};
+    std::unique_ptr<playground::Program> light_program_{nullptr};
+
     Sphere light_{1, false};
     Sphere sphere1_{2, true};
     Sphere sphere2_{2, false};
