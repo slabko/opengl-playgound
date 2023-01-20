@@ -162,7 +162,7 @@ void Scene::render()
     white_pixel_diffuse_.bind();
     white_pixel_specular_.bind();
 
-    set_material(materials::YellowRubber);
+    set_material(materials::WhiteRubber);
     draw_indices(cube_.vbo_offset(), Triangles);
 
     set_material(materials::Wood);
