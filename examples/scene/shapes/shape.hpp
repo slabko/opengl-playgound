@@ -26,14 +26,14 @@ public:
 
     // used by the scene class to store location in the memory;
     // these fields have no logic attached to the shape itself
-    [[nodiscard]] size_t vbo_offset_bytes() const { return vbo_offset_bytes_; }
-    void set_vbo_offset_bytes(size_t vbo_offset_bytes) { vbo_offset_bytes_ = vbo_offset_bytes; }
+    [[nodiscard]] size_t vbo_offset() const { return vbo_offset_; }
+    void set_vbo_offset(size_t vbo_offset_bytes) { vbo_offset_ = vbo_offset_bytes; }
 
 protected:
     void set_needs_update() { needs_update_ = true; };
 
 private:
-    size_t vbo_offset_bytes_{};
+    size_t vbo_offset_{};
     bool needs_update_{true};
 };
 

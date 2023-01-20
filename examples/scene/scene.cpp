@@ -62,12 +62,12 @@ void Scene::init()
     use_program(*program_);
     size_t const vertex_data_size = vertex_count * sizeof(Vertex);
     alloc_vbo(vertex_data_size);
-    size_t vbo_data_offset = 0;
+    size_t vbo_offset = 0;
     for (auto& s : shapes_) {
-        auto const vbo_chunk_size = s->vertex_count() * sizeof(Vertex);
-        upload_vbo(s->vbo_data(), vbo_data_offset, vbo_chunk_size);
-        s->set_vbo_offset_bytes(vbo_data_offset);
-        vbo_data_offset += vbo_chunk_size;
+        auto const vbo_chunk_size = s->vertex_count();
+        upload_vbo(s->vbo_data(), vbo_offset * sizeof(Vertex), vbo_chunk_size * sizeof(Vertex));
+        s->set_vbo_offset(vbo_offset);
+        vbo_offset += vbo_chunk_size;
     }
     assign_vbo("position", decltype(Vertex::position)::length(), sizeof(Vertex), offsetof(Vertex, position));
     assign_vbo("normal", decltype(Vertex::normal)::length(), sizeof(Vertex), offsetof(Vertex, normal));
@@ -112,9 +112,9 @@ void Scene::present_imgui()
         bunny_.set_scale(scale_);
         bunny_.update();
 
-        upload_vbo(sphere1_.vbo_data(), sphere1_.vbo_offset_bytes(), sphere1_.vertex_count() * sizeof(Vertex));
-        upload_vbo(sphere2_.vbo_data(), sphere2_.vbo_offset_bytes(), sphere2_.vertex_count() * sizeof(Vertex));
-        upload_vbo(bunny_.vbo_data(), bunny_.vbo_offset_bytes(), bunny_.vertex_count() * sizeof(Vertex));
+        upload_vbo(sphere1_.vbo_data(), sphere1_.vbo_offset() * sizeof(Vertex), sphere1_.vertex_count() * sizeof(Vertex));
+        upload_vbo(sphere2_.vbo_data(), sphere2_.vbo_offset() * sizeof(Vertex), sphere2_.vertex_count() * sizeof(Vertex));
+        upload_vbo(bunny_.vbo_data(), bunny_.vbo_offset() * sizeof(Vertex), bunny_.vertex_count() * sizeof(Vertex));
     }
 
     ImGui::End();
@@ -140,7 +140,11 @@ void Scene::render()
     set_uniform_data("camera_position", glm::vec3(camera_position));
 
     set_uniform_data("model", glm::mat4(1.0F));
-    draw_indices(indices_.size(), Triangles, light_.vertex_count());
+    set_material(materials::YellowRubber);
+    draw_indices(indices_.size() - light_.vertex_count() - bunny_.vertex_count(), Triangles, light_.vertex_count());
+
+    set_material(materials::Gold);
+    draw_indices(bunny_.vertex_count(), Triangles, bunny_.vbo_offset());
 
     // Light
     use_program(*light_program_);
@@ -202,4 +206,12 @@ glm::mat4 Scene::proj_matrix()
     auto proj = glm::frustum(-width, width, -height + lens_shift_, height + lens_shift_, znear, zfar);
 
     return proj;
+}
+
+void Scene::set_material(materials::Material const& material)
+{
+    set_uniform_data("material.ambient", material.ambient);
+    set_uniform_data("material.diffuse", material.diffuse);
+    set_uniform_data("material.specular", material.specular);
+    set_uniform_data("material.shininess", material.shininess);
 }

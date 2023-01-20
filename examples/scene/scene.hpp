@@ -12,6 +12,7 @@
 #include "shapes/cuboid.hpp"
 #include "shapes/sphere.hpp"
 #include "shapes/static_shape.hpp"
+#include "materials.hpp"
 
 class Scene : public playground::Application {
 public:
@@ -45,6 +46,8 @@ private:
 
     glm::mat4 view_matrix();
     glm::mat4 proj_matrix();
+
+    void set_material(materials::Material const& material);
 };
 
 #endif // EXAMPLES_CUBE_HPP
