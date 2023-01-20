@@ -10,9 +10,13 @@
 struct Vertex {
     glm::vec3 position{0.0F};
     glm::vec3 normal{0.0F};
+    glm::vec2 uv{0.0F};
 
     Vertex(glm::vec3 position, glm::vec3 normal) :
       position{position}, normal{normal} {}
+
+    Vertex(glm::vec3 position, glm::vec3 normal, glm::vec2 uv) :
+      position{position}, normal{normal}, uv{uv} {}
 };
 
 using VertexModel = std::vector<Vertex>;

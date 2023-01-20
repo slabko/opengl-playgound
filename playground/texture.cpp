@@ -20,8 +20,8 @@ GLint get_channels_format(size_t channels)
     }
 }
 
-Texture::Texture(size_t width, size_t height, size_t total_channels) :
-  total_channels_{total_channels}
+Texture::Texture(size_t width, size_t height, size_t total_channels, GLenum unit) :
+  total_channels_{total_channels}, unit_{unit}
 {
     glGenTextures(1, &id_);
 
@@ -44,7 +44,7 @@ Texture::Texture(size_t width, size_t height, size_t total_channels) :
 template <class PixelType>
 void Texture::upload(PixelType const* data, size_t x_offset, size_t y_offset, size_t width, size_t height)
 {
-    size_t received_channels = png::total_channels<PixelType>::value;
+    size_t const received_channels = png::total_channels<PixelType>::value;
     if (total_channels_ != received_channels) {
         throw std::runtime_error(fmt::format("Expected {} channels, got {}", total_channels_, received_channels));
     }
@@ -76,6 +76,7 @@ template void Texture::upload<png::RgbaPixel>(png::Pixels<png::RgbaPixel> const&
 
 void Texture::bind()
 {
+    glActiveTexture(unit_);
     glBindTexture(GL_TEXTURE_2D, id_);
 }
 

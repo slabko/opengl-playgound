@@ -7,6 +7,7 @@
 #include <glm/ext/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/mat4x4.hpp>
+#include <glm/vec3.hpp>
 #include <imgui.h>
 
 #include "vertex.hpp"
@@ -23,7 +24,7 @@ static std::string read_file(std::string const& path)
 }
 
 Scene::Scene() :
-  shapes_{&light_, &sphere1_, &sphere2_, &cube1_, &bunny_} {}
+  shapes_{&floor_, &sphere1_, &sphere2_, &cube_, &bunny_, &light_} {}
 
 void Scene::init()
 {
@@ -46,9 +47,13 @@ void Scene::init()
     sphere1_.set_position({-2.0, 0.5, 0.0});
     sphere1_.update();
 
-    cube1_.set_dimensions(10.0F, 0.5F, 10.0F);
-    cube1_.set_position({0.0F, -0.25F, 0.0F});
-    cube1_.update();
+    cube_.set_dimensions(1.0F, 1.0F, 1.0F);
+    cube_.set_position({0.0F, 0.5F, -1.5F});
+    cube_.update();
+
+    floor_.set_dimensions(10.0F, 0.5F, 10.0F);
+    floor_.set_position({0.0F, -0.25F, 0.0F});
+    floor_.update();
 
     sphere2_.set_size(0.5);
     sphere2_.set_position({2.0, 0.5, 0.0});
@@ -71,6 +76,7 @@ void Scene::init()
     }
     assign_vbo("position", decltype(Vertex::position)::length(), sizeof(Vertex), offsetof(Vertex, position));
     assign_vbo("normal", decltype(Vertex::normal)::length(), sizeof(Vertex), offsetof(Vertex, normal));
+    assign_vbo("uv", decltype(Vertex::uv)::length(), sizeof(Vertex), offsetof(Vertex, uv));
 
     //////// IBO ////////
     // We use universal index buffer where each polygon is represented by three sequential vertices in the vertex buffer
@@ -84,6 +90,16 @@ void Scene::init()
     std::iota(indices_.begin(), indices_.end(), 0);
     alloc_ibo(index_data_size);
     upload_ibo(indices_.data(), 0, index_data_size);
+
+    png::RgbPixel const pixel_diffuse{255, 255, 255};
+    white_pixel_diffuse_.upload(&pixel_diffuse, 0, 0, 1, 1);
+    png::RedPixel const pixel_specular{255};
+    white_pixel_specular_.upload(&pixel_specular, 0, 0, 1, 1);
+
+    auto const cube_texture_image = png::read_png<png::RgbPixel>("textures/crate.png");
+    cube_diffuse_.upload(cube_texture_image.pixels, 0, 0, cube_texture_image.width, cube_texture_image.height);
+    auto const cube_specular_texture_image = png::read_png<png::RedPixel>("textures/crate_specular.png");
+    cube_specular_.upload(cube_specular_texture_image.pixels, 0, 0, cube_specular_texture_image.width, cube_specular_texture_image.height);
 }
 
 void Scene::present_imgui()
@@ -136,12 +152,25 @@ void Scene::render()
     use_program(*program_);
     set_uniform_data("view", view);
     set_uniform_data("proj", proj);
+    set_uniform_data("model", glm::mat4(1.0F));
     set_uniform_data("light_position", light_position_);
     set_uniform_data("camera_position", glm::vec3(camera_position));
 
-    set_uniform_data("model", glm::mat4(1.0F));
+    set_uniform_data("diffuse_texture", 0);
+    set_uniform_data("specular_texture", 1);
+
+    white_pixel_diffuse_.bind();
+    white_pixel_specular_.bind();
+
     set_material(materials::YellowRubber);
-    draw_indices(indices_.size() - light_.vertex_count() - bunny_.vertex_count(), Triangles, light_.vertex_count());
+    draw_indices(cube_.vbo_offset(), Triangles);
+
+    set_material(materials::Wood);
+    cube_diffuse_.bind();
+    cube_specular_.bind();
+    draw_indices(cube_.vertex_count(), Triangles, cube_.vbo_offset());
+    white_pixel_diffuse_.bind();
+    white_pixel_specular_.bind();
 
     set_material(materials::Gold);
     draw_indices(bunny_.vertex_count(), Triangles, bunny_.vbo_offset());
@@ -151,7 +180,7 @@ void Scene::render()
     set_uniform_data("view", view);
     set_uniform_data("proj", proj);
     set_uniform_data("model", glm::translate(glm::mat4(1.0F), light_position_));
-    draw_indices(light_.vertex_count());
+    draw_indices(light_.vertex_count(), Triangles, light_.vbo_offset());
 }
 
 void Scene::drag_mouse(glm::ivec2 offset, KeyModifiers modifiers)

@@ -23,6 +23,18 @@ struct Material {
       shininess{shininess} {};
 };
 
+static constexpr Material Wood{
+  0.05F, 0.05F, 0.05F,
+  0.5F, 0.5F, 0.5F,
+  0.9F, 0.9F, 0.9F,
+  0.278125F * 128.0F};
+
+static constexpr Material WhiteRubber{
+  0.05F, 0.05F, 0.05F,
+  0.5F, 0.5F, 0.5F,
+  0.7F, 0.7F, 0.7F,
+  0.078125F * 128.0F};
+
 static constexpr Material BlackRubber{
   0.02F, 0.02F, 0.02F,
   0.01F, 0.01F, 0.01F,

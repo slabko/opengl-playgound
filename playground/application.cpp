@@ -253,6 +253,18 @@ void Application::set_uniform_data(std::string const& name, float const& data)
     glUniform1f(id, data);
 }
 
+void Application::set_uniform_data(std::string const& name, GLuint const& data)
+{
+    auto id = get_uniform_location(name);
+    glUniform1ui(id, data);
+}
+
+void Application::set_uniform_data(std::string const& name, GLint const& data)
+{
+    auto id = get_uniform_location(name);
+    glUniform1i(id, data);
+}
+
 void Application::set_uniform_data(std::string const& name, glm::mat4 const& data)
 {
     auto id = get_uniform_location(name);

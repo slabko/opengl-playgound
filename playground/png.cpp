@@ -117,6 +117,7 @@ auto read_png(std::string const& filepath) -> PngData<PixelType>
       static_cast<size_t>(channels)};
 }
 
+template auto read_png<RedPixel>(std::string const& filepath) -> PngData<RedPixel>;
 template auto read_png<RgbPixel>(std::string const& filepath) -> PngData<RgbPixel>;
 template auto read_png<RgbaPixel>(std::string const& filepath) -> PngData<RgbaPixel>;
 

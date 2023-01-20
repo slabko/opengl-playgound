@@ -12,7 +12,7 @@ namespace playground {
 class Texture final {
 public:
     Texture() = default;
-    Texture(size_t width, size_t height, size_t total_channels);
+    Texture(size_t width, size_t height, size_t total_channels, GLenum unit = GL_TEXTURE0);
     ~Texture();
 
     Texture(Texture const&) = delete;
@@ -29,10 +29,13 @@ public:
     void bind();
     void unbind();
 
+    [[nodiscard]] GLuint id() const { return id_; }
+
 private:
     size_t total_channels_{};
 
     GLuint id_{};
+    GLenum unit_{};
 };
 
 } // namespace playground

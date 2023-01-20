@@ -93,6 +93,10 @@ protected:
 
     [[maybe_unused]] void set_uniform_data(std::string const& name, float const& data);
 
+    [[maybe_unused]] void set_uniform_data(std::string const& name, GLuint const& data);
+
+    [[maybe_unused]] void set_uniform_data(std::string const& name, GLint const& data);
+
     [[maybe_unused]] void set_uniform_data(std::string const& name, glm::mat4 const& data);
 
     [[maybe_unused]] void set_uniform_data(std::string const& name, glm::vec3 const& data);

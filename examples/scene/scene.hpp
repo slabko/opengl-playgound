@@ -25,15 +25,20 @@ public:
     void scroll_mouse(int val) override;
 
 private:
-    std::unique_ptr<playground::Program> program_{nullptr};
-    std::unique_ptr<playground::Program> light_program_{nullptr};
+    std::unique_ptr<playground::Program> program_{};
+    std::unique_ptr<playground::Program> light_program_{};
 
     Sphere light_{1, false};
     Sphere sphere1_{2, true};
     Sphere sphere2_{2, false};
-    Cuboid cube1_{};
+    Cuboid cube_{};
+    Cuboid floor_{};
+    playground::Texture white_pixel_diffuse_{1, 1, 3, GL_TEXTURE0};
+    playground::Texture white_pixel_specular_{1, 1, 1, GL_TEXTURE1};
+    playground::Texture cube_diffuse_{256, 256, 3, GL_TEXTURE0};
+    playground::Texture cube_specular_{256, 256, 1, GL_TEXTURE1};
     StaticShape bunny_{};
-    std::unique_ptr<StaticShape const> bunny_prototype_{nullptr};
+    std::unique_ptr<StaticShape const> bunny_prototype_{};
     std::vector<Shape*> shapes_{};
     std::vector<uint32_t> indices_{};
     float scale_{1.0F};
